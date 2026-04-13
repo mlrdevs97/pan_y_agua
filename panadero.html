@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Panadero</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FAF7F2;--surface:#FFFFFF;--surface2:#F3EFE8;--surface3:#EDE8DF;
+  --border:#E8E2D9;--border2:#D4CCBF;
+  --text:#1A1714;--text2:#6B6560;--text3:#9C9590;
+  --accent:#C4561A;--accent-l:#FAE9DF;--accent-d:#9E3F10;
+  --blue:#2B6CB0;--blue-l:#EBF4FF;--blue-d:#1A4A80;
+  --green:#276749;--green-l:#E6F4EE;
+  --amber:#92600A;--amber-l:#FEF3DC;
+  --purple:#5B3E8F;--purple-l:#EEE8FA;
+  --red:#C53030;--red-l:#FEE8E8;
+  --r:12px;--rl:18px;
+}
+html{font-size:16px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.app{display:flex;flex-direction:column;min-height:100vh;max-width:480px;margin:0 auto}
+
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.9rem 1.25rem .7rem;position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between}
+.topbar-left .title{font-family:'Lora',serif;font-size:1.35rem;font-weight:400;letter-spacing:-.01em}
+.topbar-left .title em{font-style:italic;color:var(--accent)}
+.topbar-left .sub{font-size:.62rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-top:1px}
+
+/* CONTENT */
+.content{flex:1;padding:.9rem 1rem 5.5rem;overflow-x:hidden}
+
+/* BOTTOM NAV */
+.nav{display:flex;background:var(--surface);border-top:1px solid var(--border);position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:.6rem .25rem .5rem;border:none;background:transparent;cursor:pointer;color:var(--text3);font-family:'Inter',sans-serif;font-size:.6rem;letter-spacing:.04em;text-transform:uppercase;font-weight:500;-webkit-tap-highlight-color:transparent}
+.nav-pill{width:40px;height:26px;border-radius:13px;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s}
+.nav-btn.active{color:var(--accent)}.nav-btn.active .nav-pill{background:var(--accent-l)}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1rem 1.1rem;margin-bottom:.75rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card-hdr{font-size:.62rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:.85rem}
+.card-hdr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem}
+.card-hdr-row .card-hdr{margin-bottom:0}
+
+/* FORM */
+.field{margin-bottom:.85rem}.field:last-child{margin-bottom:0}
+.lbl{display:block;font-size:.68rem;font-weight:500;color:var(--text2);margin-bottom:.3rem}
+.irow{display:flex;gap:6px;align-items:stretch}
+input[type=number],input[type=text],select,textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:.58rem .8rem;font-family:'Inter',sans-serif;font-size:.92rem;color:var(--text);outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--surface)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236B6560' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:2rem;cursor:pointer}
+input[type=range]{-webkit-appearance:none;width:100%;height:5px;border-radius:3px;background:var(--surface3);outline:none;cursor:pointer;background-image:linear-gradient(var(--accent),var(--accent));background-repeat:no-repeat;background-size:var(--pct,39%) 100%}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.range-row{display:flex;justify-content:space-between;font-size:.65rem;color:var(--text3);margin-top:4px}
+.upill{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:0 .8rem;font-size:.78rem;color:var(--text3);display:flex;align-items:center;white-space:nowrap;flex-shrink:0}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:.5rem .9rem;font-family:'Inter',sans-serif;font-size:.76rem;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.btn:hover{border-color:var(--border2);color:var(--text)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-d);border-color:var(--accent-d)}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text3)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text2)}
+.btn-danger{border-color:transparent;color:var(--red)}
+.btn-danger:hover{background:var(--red-l);border-color:var(--red-l)}
+.btn-sm{padding:.35rem .65rem;font-size:.7rem}
+.btn-xs{padding:.25rem .5rem;font-size:.65rem}
+.btn-icon{width:30px;height:30px;padding:0;justify-content:center;border-radius:8px;flex-shrink:0}
+.btn-full{width:100%;justify-content:center}
+.btn-dash{width:100%;justify-content:center;border-style:dashed;color:var(--text3)}
+.btn-dash:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-l)}
+
+/* ALERTS */
+.alert{border-radius:var(--r);padding:.65rem .9rem;font-size:.76rem;margin-bottom:.75rem;display:none;line-height:1.5}
+.alert.show{display:block}
+.alert-err{background:var(--red-l);color:var(--red);border:1px solid #F5C6C6}
+.alert-warn{background:var(--amber-l);color:var(--amber);border:1px solid #F5D99A}
+.alert-ok{background:var(--green-l);color:var(--green);border:1px solid #B2DFCC}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;border-radius:20px;font-size:.62rem;font-weight:500;padding:1px 7px;white-space:nowrap}
+.tag-flour{background:var(--green-l);color:var(--green)}
+.tag-water{background:var(--blue-l);color:var(--blue)}
+.tag-elab{background:var(--amber-l);color:var(--amber)}
+
+/* RECIPE LIST */
+.recipe-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rl);padding:.85rem 1rem;margin-bottom:.6rem;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color .15s;box-shadow:0 1px 3px rgba(0,0,0,.05);-webkit-tap-highlight-color:transparent}
+.recipe-item:hover,.recipe-item:active{border-color:var(--accent)}
+.recipe-item.sel{border-color:var(--accent);background:var(--accent-l)}
+.ri-icon{width:38px;height:38px;border-radius:9px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.ri-name{font-weight:600;font-size:.92rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ri-meta{font-size:.68rem;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:.82rem;line-height:1.7}
+
+/* RESULT SECTIONS */
+.res-section{margin-bottom:.75rem}
+.res-section-title{font-size:.62rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+.res-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ingredient result row */
+.irr{display:flex;align-items:flex-start;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border);gap:8px}
+.irr:last-child{border-bottom:none}
+.irr-left .name{font-size:.88rem;font-weight:500;color:var(--text)}
+.irr-left .pct{font-size:.68rem;color:var(--text3);margin-top:1px}
+.irr-right{text-align:right;flex-shrink:0}
+.irr-right .grams{font-family:'Lora',serif;font-size:1.15rem;font-weight:600;color:var(--text)}
+.irr-right .sub{font-size:.65rem;color:var(--text3);margin-top:1px;line-height:1.4}
+
+/* elab block */
+.elab-block{background:var(--amber-l);border:1px solid #F0D080;border-radius:var(--r);padding:.85rem .95rem;margin-bottom:.6rem}
+.elab-title{font-size:.7rem;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.55rem}
+.elab-row{display:flex;justify-content:space-between;align-items:baseline;padding:.28rem 0;border-bottom:1px solid rgba(146,96,10,.12)}
+.elab-row:last-child{border-bottom:none;padding-top:.45rem}
+.elab-row span{font-size:.82rem;color:var(--amber)}
+.elab-row .eg{font-family:'Lora',serif;font-size:1rem;font-weight:600;color:var(--amber)}
+.elab-row.total-row span{font-weight:600;font-size:.85rem}
+.elab-row.total-row .eg{font-size:1.1rem}
+
+/* total bar */
+.total-bar{background:var(--surface2);border-radius:var(--r);padding:.7rem .95rem;display:flex;align-items:center;justify-content:space-between;margin-top:.5rem}
+.total-bar-lbl{font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text3)}
+.total-bar-val{font-family:'Lora',serif;font-size:1.3rem;font-weight:600}
+
+/* result hero */
+.result-hero{text-align:center;padding:1.1rem 0 .6rem}
+.result-hero .rlbl{font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.result-hero .rval{font-family:'Lora',serif;font-size:2.8rem;font-weight:600;line-height:1;color:var(--accent)}
+.result-hero .runit{font-size:.82rem;color:var(--text3);margin-top:3px}
+
+/* mix bar */
+.mix-bar{height:13px;border-radius:7px;overflow:hidden;display:flex;background:var(--surface2);margin:.6rem 0 .3rem}
+.mix-bar-c{background:var(--blue);transition:width .4s cubic-bezier(.4,0,.2,1)}
+.mix-bar-h{background:var(--accent);transition:width .4s cubic-bezier(.4,0,.2,1)}
+.mix-labels{display:flex;justify-content:space-between;font-size:.65rem;color:var(--text3)}
+
+/* stat grid */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:.7rem}
+.stat{background:var(--surface2);border-radius:var(--r);padding:.65rem .8rem}
+.stat-lbl{font-size:.6rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:2px}
+.stat-val{font-family:'Lora',serif;font-size:1.15rem;font-weight:600}
+.stat-unit{font-size:.68rem;color:var(--text3)}
+
+/* flour sum */
+.fs-pill{display:inline-flex;align-items:center;border-radius:20px;padding:2px 9px;font-size:.7rem;font-weight:600}
+.fs-ok{background:var(--green-l);color:var(--green)}
+.fs-err{background:var(--red-l);color:var(--red)}
+
+/* col headers inside modal */
+.chdr{font-size:.6rem;font-weight:500;color:var(--text3);letter-spacing:.03em;padding:0 2px}
+
+/* elab edit block */
+.eeb{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.85rem .9rem;margin-bottom:.65rem}
+.eeb-header{display:flex;align-items:center;gap:6px;margin-bottom:.65rem}
+.eeb-name-input{flex:1;font-size:.88rem;padding:.45rem .65rem}
+.eeb-ings{margin-top:.5rem}
+.eeb-ing-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;align-items:center;margin-bottom:5px}
+.eeb-ing-row input{font-size:.82rem;padding:.42rem .6rem}
+
+/* modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,23,20,.55);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:94vh;overflow-y:auto;overscroll-behavior:contain}
+.modal-handle{width:34px;height:4px;border-radius:2px;background:var(--border2);margin:10px auto 0}
+.modal-hdr{padding:.9rem 1.1rem .7rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);z-index:10}
+.modal-title{font-family:'Lora',serif;font-size:1.15rem;font-weight:400}
+.modal-body{padding:1.1rem}
+.modal-foot{padding:.7rem 1.1rem 1.1rem;display:flex;gap:7px;justify-content:flex-end;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface)}
+.section-hdr{font-size:.62rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin:1.1rem 0 .55rem;display:flex;align-items:center;justify-content:space-between}
+.section-hdr::before{display:none}
+
+/* cp ref */
+.cp-ref{background:var(--surface2);border-radius:var(--r);padding:.65rem .85rem;font-size:.68rem;color:var(--text3);line-height:1.75;margin-top:.6rem}
+.cp-ref strong{color:var(--text2)}
+
+/* result nav */
+.res-nav{display:flex;background:var(--surface2);border-radius:9px;padding:3px;gap:2px;margin-bottom:.85rem}
+.res-tab{flex:1;padding:.42rem .4rem;border:none;background:transparent;border-radius:7px;font-family:'Inter',sans-serif;font-size:.68rem;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;text-align:center;-webkit-tap-highlight-color:transparent}
+.res-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.09)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="title">Pan &amp; <em>agua</em></div>
+    <div class="sub" id="topbar_sub">Recetario</div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══════════════════════════════ RECETAS ═══════════════════════════════ -->
+<div class="page active" id="page_recetas">
+
+  <!-- LIST -->
+  <div id="v_list">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+      <span style="font-size:.78rem;font-weight:500;color:var(--text2)" id="rc_count"></span>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="importJSON()">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Importar
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openNewRecipe()">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Nueva
+        </button>
+      </div>
+    </div>
+    <div id="recipe_list_el"></div>
+  </div>
+
+  <!-- DETAIL -->
+  <div id="v_detail" style="display:none">
+    <!-- header -->
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:.85rem">
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="showList()">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Lora',serif;font-size:1.15rem;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="det_name"></div>
+        <div style="font-size:.68rem;color:var(--text3);margin-top:1px" id="det_meta"></div>
+      </div>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="editCurrent()" title="Editar">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5a1.5 1.5 0 012.12 2.12L5 13.25 2 14l.75-3L11.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="exportCurrent()" title="Exportar JSON">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <!-- production inputs -->
+    <div class="card">
+      <div class="card-hdr">Producción</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="field" style="margin:0">
+          <label class="lbl">Nº de piezas</label>
+          <input type="number" id="d_pieces" value="10" min="1" step="1" oninput="calcDetail()">
+        </div>
+        <div class="field" style="margin:0">
+          <label class="lbl">Peso pieza (g)</label>
+          <input type="number" id="d_weight" value="500" min="1" step="1" oninput="calcDetail()">
+        </div>
+      </div>
+      <div id="d_chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.65rem"></div>
+    </div>
+
+    <div class="alert alert-err" id="d_err"></div>
+
+    <!-- result tabs -->
+    <div id="d_res_wrap" style="display:none">
+      <div class="res-nav" id="d_res_nav"></div>
+      <div id="d_res_body"></div>
+      <button class="btn btn-primary btn-full" onclick="goToAmasado()" style="margin-bottom:.75rem">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Calcular temperatura de amasado
+      </button>
+    </div>
+
+    <div id="del_confirm_wrap" style="margin-bottom:.75rem">
+      <button class="btn btn-danger btn-sm" id="del_btn_1" onclick="showDeleteConfirm()">Eliminar receta</button>
+      <div id="del_confirm_box" style="display:none;background:var(--red-l);border:1px solid #F5C6C6;border-radius:var(--r);padding:.75rem .9rem">
+        <div style="font-size:.8rem;color:var(--red);margin-bottom:.6rem">¿Eliminar esta receta? Esta acción no se puede deshacer.</div>
+        <div style="display:flex;gap:7px">
+          <button class="btn btn-sm" style="flex:1;justify-content:center" onclick="hideDeleteConfirm()">Cancelar</button>
+          <button class="btn btn-danger btn-sm" style="flex:1;justify-content:center;background:var(--red);color:#fff;border-color:var(--red)" onclick="deleteCurrent()">Sí, eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ AMASADO ═══════════════════════════════ -->
+<div class="page" id="page_amasado">
+  <div class="alert alert-ok" id="a_banner" style="margin-bottom:.75rem"></div>
+
+  <div class="card">
+    <div class="card-hdr">Temperatura objetivo de la masa</div>
+    <div class="field" style="margin:0">
+      <label class="lbl">T objetivo</label>
+      <div class="irow">
+        <input type="number" id="a_ttgt" value="24" min="1" max="80" step="0.5" oninput="aCalc()">
+        <div class="upill">°C</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr-row">
+      <div class="card-hdr">Agua de amasado</div>
+      <span class="tag tag-water" style="font-size:.62rem">cp = 4.18</span>
+    </div>
+    <div class="field" style="margin:0">
+      <label class="lbl">Masa (g)</label>
+      <input type="number" id="a_wm" value="300" min="1" step="1" oninput="aCalc()">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr-row">
+      <div class="card-hdr">Ingredientes</div>
+      <button class="btn btn-ghost btn-sm" onclick="aAddIng()">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Añadir
+      </button>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:5px">
+      <span class="chdr">Nombre</span><span class="chdr">Masa (g)</span><span class="chdr">T (°C)</span><span></span>
+    </div>
+    <div id="a_ing_list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">Calor específico (cp)</div>
+    <div id="a_cp_list"></div>
+    <div class="cp-ref">
+      <strong>Referencia J/g·K:</strong><br>
+      Harina 1.80 · Sémola 1.75 · Sal 0.88 · Azúcar 1.24<br>
+      Mantequilla 2.09 · Huevo 3.18 · Leche 3.93<br>
+      Masa madre 3.20 · Escaldado ~2.5 · Agua 4.18
+    </div>
+  </div>
+
+  <div class="alert alert-err" id="a_err"></div>
+  <div class="alert alert-warn" id="a_warn"></div>
+
+  <div class="card" id="a_result" style="display:none">
+    <div class="card-hdr">Temperatura del agua necesaria</div>
+    <div class="result-hero">
+      <div class="rlbl">T agua de amasado</div>
+      <div class="rval" id="a_tw">—</div>
+      <div class="runit">°C</div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-lbl">Masa total</div><div class="stat-val" id="a_mt">—</div><div class="stat-unit">g</div></div>
+      <div class="stat"><div class="stat-lbl">Σ m·cp·T</div><div class="stat-val" id="a_hi">—</div><div class="stat-unit">J</div></div>
+    </div>
+    <div style="text-align:center;margin-top:.75rem">
+      <button class="btn btn-sm" id="a_to_mezcla" style="display:none" onclick="aGoMezcla()">
+        Calcular mezcla fría / caliente →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ MEZCLA ═══════════════════════════════ -->
+<div class="page" id="page_mezcla">
+  <div class="card">
+    <div class="card-hdr">Temperaturas disponibles</div>
+    <div class="field">
+      <label class="lbl">Agua fría (°C)</label>
+      <div class="irow"><input type="number" id="m_tc" value="20" min="0" max="99" step="0.5" oninput="mRangeUpdate();mCalc()"><div class="upill">°C</div></div>
+    </div>
+    <div class="field" style="margin:0">
+      <label class="lbl">Agua caliente (°C)</label>
+      <div class="irow"><input type="number" id="m_th" value="100" min="1" max="100" step="0.5" oninput="mRangeUpdate();mCalc()"><div class="upill">°C</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr-row">
+      <div class="card-hdr">Temperatura objetivo</div>
+      <span style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--accent)" id="m_tdisp">40.0°C</span>
+    </div>
+    <input type="range" id="m_sl" min="1" max="99" value="40" step="0.5" oninput="mSyncSlider();mCalc()">
+    <div class="range-row"><span id="m_rmin">1°C</span><span id="m_rmax">99°C</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">Cantidad total a obtener</div>
+    <div class="irow">
+      <input type="number" id="m_tot" value="1" min="0.01" step="0.1" style="flex:2" oninput="mCalc()">
+      <select id="m_unit" onchange="mCalc()">
+        <option value="l">litros</option>
+        <option value="ml">mililitros</option>
+        <option value="g">gramos</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="alert alert-err" id="m_err"></div>
+
+  <div class="card" id="m_result" style="display:none">
+    <div class="card-hdr">Proporciones</div>
+    <div class="mix-bar"><div class="mix-bar-c" id="m_bc" style="width:50%"></div><div class="mix-bar-h" id="m_bh" style="width:50%"></div></div>
+    <div class="mix-labels"><span id="m_lc">Fría 50%</span><span id="m_lh">Caliente 50%</span></div>
+    <div style="margin-top:.6rem">
+      <div class="irr">
+        <div class="irr-left">
+          <div class="name" style="display:flex;align-items:center;gap:6px">
+            <span style="width:9px;height:9px;border-radius:50%;background:var(--blue);flex-shrink:0"></span>Agua fría
+          </div>
+        </div>
+        <div class="irr-right"><div class="grams" id="m_rc">—</div><div class="sub" id="m_uc"></div></div>
+      </div>
+      <div class="irr">
+        <div class="irr-left">
+          <div class="name" style="display:flex;align-items:center;gap:6px">
+            <span style="width:9px;height:9px;border-radius:50%;background:var(--accent);flex-shrink:0"></span>Agua caliente
+          </div>
+        </div>
+        <div class="irr-right"><div class="grams" id="m_rh">—</div><div class="sub" id="m_uh"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-btn active" id="nav_recetas" onclick="switchTab('recetas')">
+    <div class="nav-pill" id="np_recetas">
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M7 7.5h6M7 10.5h6M7 13.5h3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </div>
+    Recetas
+  </button>
+  <button class="nav-btn" id="nav_amasado" onclick="switchTab('amasado')">
+    <div class="nav-pill" id="np_amasado">
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.6"/><path d="M10 6v4l2.5 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    Amasado
+  </button>
+  <button class="nav-btn" id="nav_mezcla" onclick="switchTab('mezcla')">
+    <div class="nav-pill" id="np_mezcla">
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M5 16s1-4 5-4 5 4 5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><line x1="10" y1="4" x2="10" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="4" r="1.5" fill="currentColor"/></svg>
+    </div>
+    Mezcla
+  </button>
+</nav>
+
+<!-- ═════════════════════ MODAL: RECIPE EDITOR ═════════════════════ -->
+<div class="modal-overlay" id="modal_overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal_title">Nueva receta</div>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal()">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field">
+        <label class="lbl">Nombre de la receta</label>
+        <input type="text" id="r_name" placeholder="Ej. Pan de campo, Focaccia…">
+      </div>
+      <div class="field">
+        <label class="lbl">Notas (opcional)</label>
+        <textarea id="r_notes" rows="2" style="resize:none;font-size:.85rem" placeholder="Proceso, tiempos, temperatura de fermentación…"></textarea>
+      </div>
+
+      <!-- HARINAS -->
+      <div class="section-hdr">
+        <span>Harinas <span style="font-weight:400;opacity:.65">(deben sumar 100%)</span></span>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span id="r_fsum" class="fs-pill fs-err">0 / 100%</span>
+          <button class="btn btn-ghost btn-xs" onclick="rAddFlour()">+ Harina</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:4px">
+        <span class="chdr">Nombre</span><span class="chdr">%</span><span></span>
+      </div>
+      <div id="r_flour_list"></div>
+
+      <!-- OTROS INGREDIENTES -->
+      <div class="section-hdr">
+        <span>Otros ingredientes <span style="font-weight:400;opacity:.65">(% sobre harina)</span></span>
+        <button class="btn btn-ghost btn-xs" onclick="rAddIng()">+ Ingrediente</button>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:4px">
+        <span class="chdr">Nombre</span><span class="chdr">%</span><span></span>
+      </div>
+      <div id="r_ing_list"></div>
+      <div style="font-size:.65rem;color:var(--text3);margin-top:.35rem">Incluye el agua total de la receta (ej. "Agua" al 75%).</div>
+
+      <!-- ELABORACIONES PREVIAS -->
+      <div class="section-hdr">
+        <span>Elaboraciones previas</span>
+        <button class="btn btn-ghost btn-xs" onclick="rAddElab()">+ Añadir</button>
+      </div>
+      <div id="r_elab_list"></div>
+      <div id="r_elab_empty" style="font-size:.7rem;color:var(--text3);padding:.3rem 0">Sin elaboraciones previas.</div>
+      <div style="font-size:.65rem;color:var(--text3);margin-top:.5rem;background:var(--surface2);border-radius:var(--r);padding:.6rem .8rem;line-height:1.65">
+        Añade prefermentos, escaldados, tang zhong, soakers, etc. Cada elaboración tiene sus propios ingredientes: una o varias harinas, agua, y cualquier otro ingrediente libre. Sus cantidades se descuentan de la masa final.
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveRecipe()">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════
+const CP_W = 4.18;
+const SUBS = {recetas:'Recetario', amasado:'T° del agua de amasado', mezcla:'Mezcla fría / caliente'};
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let recipes = [];
+let activeId = null;
+let editingId = null;
+let rFlours=[], rIngs=[], rElabs=[];
+let rFId=0, rIId=0, rEId=0, rEIId=0;
+let aIngs=[], aIngId=0;
+let pendingMezclaTemp=null;
+let pendingAmasado=null;
+// active result tab
+let resTab=0;
+// last calc result (for tab switching)
+let lastCalc=null;
+
+// ═══════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════
+function save(){ try{ localStorage.setItem('pan_v4', JSON.stringify(recipes)); }catch(e){} }
+function load(){ try{ const d=localStorage.getItem('pan_v4'); if(d) recipes=JSON.parse(d); }catch(e){ recipes=[]; } }
+
+function importJSON(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange=e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const fr=new FileReader();
+    fr.onload=ev=>{
+      try{
+        const data=JSON.parse(ev.target.result);
+        const arr=Array.isArray(data)?data:[data];
+        let n=0;
+        arr.forEach(r=>{ if(!r.name) return; if(!r.id) r.id=uid(); const i=recipes.findIndex(x=>x.id===r.id); if(i>=0) recipes[i]=r; else recipes.push(r); n++; });
+        save(); renderList(); if(n) alert(n+' receta(s) importada(s).');
+      }catch(e){ alert('JSON no válido.'); }
+    };
+    fr.readAsText(file);
+  };
+  inp.click();
+}
+
+function exportCurrent(){
+  const r=recipes.find(x=>x.id===activeId); if(!r) return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(r,null,2)],{type:'application/json'}));
+  a.download=(r.name||'receta').replace(/\s+/g,'_')+'.json'; a.click();
+}
+
+// ═══════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════
+function switchTab(name){
+  ['recetas','amasado','mezcla'].forEach(t=>{
+    document.getElementById('page_'+t).classList.toggle('active',t===name);
+    document.getElementById('nav_'+t).classList.toggle('active',t===name);
+  });
+  document.getElementById('topbar_sub').textContent=SUBS[name];
+  if(name==='amasado') aCalc();
+  if(name==='mezcla' && pendingMezclaTemp!==null){
+    const tc=parseFloat(document.getElementById('m_tc').value)||0;
+    const th=parseFloat(document.getElementById('m_th').value)||100;
+    const cl=Math.max(tc+0.5,Math.min(th-0.5,pendingMezclaTemp));
+    document.getElementById('m_sl').value=cl.toFixed(1);
+    pendingMezclaTemp=null;
+    mRangeUpdate(); mCalc();
+  }
+}
+
+// ═══════════════════════════════════════
+// RECIPE LIST
+// ═══════════════════════════════════════
+function renderList(){
+  const el=document.getElementById('recipe_list_el');
+  document.getElementById('rc_count').textContent=recipes.length+' receta'+(recipes.length===1?'':'s');
+  if(!recipes.length){
+    el.innerHTML=`<div class="empty-state">🍞<br><br>Aún no tienes recetas guardadas.<br>Pulsa <strong>Nueva</strong> para crear la primera.</div>`;
+    return;
+  }
+  el.innerHTML=recipes.map(r=>{
+    const fn=(r.flours||[]).map(f=>f.name).filter(Boolean).join(' + ')||'—';
+    const hw=getHydration(r); const hStr=hw?'Hid. '+hw.toFixed(0)+'%':'';
+    const elabStr=(r.elabs||[]).length?(r.elabs||[]).map(e=>e.name).join(', '):'';
+    const meta=[fn,hStr,elabStr].filter(Boolean).join(' · ');
+    return `<div class="recipe-item${r.id===activeId?' sel':''}" onclick="selectRecipe('${r.id}')">
+      <div class="ri-icon">🍞</div>
+      <div style="flex:1;min-width:0"><div class="ri-name">${esc(r.name)}</div><div class="ri-meta">${esc(meta)}</div></div>
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>`;
+  }).join('');
+}
+
+function getHydration(r){
+  const w=(r.ings||[]).find(i=>/^agua$/i.test((i.name||'').trim()));
+  return w?parseFloat(w.pct)||0:null;
+}
+
+function selectRecipe(id){ activeId=id; renderList(); showDetail(); }
+function showList(){ document.getElementById('v_list').style.display=''; document.getElementById('v_detail').style.display='none'; }
+function showDetail(){ document.getElementById('v_list').style.display='none'; document.getElementById('v_detail').style.display=''; calcDetail(); }
+
+// ═══════════════════════════════════════
+// RECIPE CALC
+// ═══════════════════════════════════════
+function calcDetail(){
+  const r=recipes.find(x=>x.id===activeId); if(!r) return;
+  const pieces=parseInt(document.getElementById('d_pieces').value)||0;
+  const unitW=parseFloat(document.getElementById('d_weight').value)||0;
+  const errEl=document.getElementById('d_err');
+  const resWrap=document.getElementById('d_res_wrap');
+  errEl.classList.remove('show'); resWrap.style.display='none';
+
+  document.getElementById('det_name').textContent=r.name;
+  document.getElementById('det_meta').textContent=r.notes||'';
+
+  if(!pieces||!unitW){ errEl.textContent='Introduce el número de piezas y el peso unitario.'; errEl.classList.add('show'); return; }
+
+  const fsum=(r.flours||[]).reduce((s,f)=>s+(parseFloat(f.pct)||0),0);
+  if(Math.abs(fsum-100)>0.01){ errEl.textContent='Las harinas suman '+fsum.toFixed(1)+'% (deben sumar exactamente 100%).'; errEl.classList.add('show'); return; }
+
+  const totalMass=pieces*unitW;
+  const otherPct=(r.ings||[]).reduce((s,i)=>s+(parseFloat(i.pct)||0),0);
+  const flourG=totalMass/(1+otherPct/100);
+
+  // Per-flour grams
+  const fG={};
+  (r.flours||[]).forEach(f=>{ fG[f.id]=flourG*(parseFloat(f.pct)||0)/100; });
+
+  // Chips
+  const chips=document.getElementById('d_chips');
+  const hw=getHydration(r);
+  chips.innerHTML='';
+  if(hw) chips.innerHTML+=`<span class="tag tag-water">Hid. ${hw.toFixed(0)}%</span>`;
+  (r.flours||[]).forEach(f=>chips.innerHTML+=`<span class="tag tag-flour">${esc(f.name)} ${(parseFloat(f.pct)||0).toFixed(0)}%</span>`);
+  if((r.elabs||[]).length) chips.innerHTML+=`<span class="tag tag-elab">${(r.elabs||[]).length} elaboración${(r.elabs||[]).length>1?'es':''} previa${(r.elabs||[]).length>1?'s':''}</span>`;
+  chips.innerHTML+=`<span style="font-size:.68rem;color:var(--text3)">${totalMass.toFixed(0)} g total</span>`;
+
+  // ── ELABORACIONES: deduct map ──
+  // deductMap[flourId] += grams going to elaboraciones
+  // deductWater += total water going to elaboraciones
+  // deductOther[ingId] += grams of other ings going to elaboraciones
+  const deductF={}; // flourId → g
+  let deductW=0;
+  const deductO={}; // ingId → g
+  const elabCalcs=[];
+
+  (r.elabs||[]).forEach(elab=>{
+    const elabIngs=[]; // {name, grams, type:'flour'|'water'|'other'}
+    let elabTotal=0;
+
+    (elab.ings||[]).forEach(ei=>{
+      let grams=0;
+      if(ei.type==='flour'){
+        // pct of that specific flour's total grams
+        const base=fG[ei.flourId]||0;
+        grams=base*(parseFloat(ei.pct)||0)/100;
+        deductF[ei.flourId]=(deductF[ei.flourId]||0)+grams;
+        const fname=(r.flours||[]).find(f=>f.id===ei.flourId)?.name||'Harina';
+        elabIngs.push({name:fname, grams, type:'flour', pctDesc:(parseFloat(ei.pct)||0).toFixed(1)+'% de '+fname});
+      } else if(ei.type==='water'){
+        // pct of THIS elaboration's own flour (sum of flour-type ings already pushed)
+        const elabFlourG=elabIngs.filter(x=>x.type==='flour').reduce((s,x)=>s+x.grams,0);
+        grams=elabFlourG*(parseFloat(ei.pct)||0)/100;
+        deductW+=grams;
+        elabIngs.push({name:'Agua', grams, type:'water', pctDesc:(parseFloat(ei.pct)||0).toFixed(1)+'% s/harina elaboración'});
+      } else {
+        // other: pct of total recipe flour, linked to an ing by id
+        grams=flourG*(parseFloat(ei.pct)||0)/100;
+        if(ei.ingId!=null) deductO[ei.ingId]=(deductO[ei.ingId]||0)+grams;
+        const iname=(r.ings||[]).find(i=>i.id===ei.ingId)?.name||ei.name||'Ingrediente';
+        elabIngs.push({name:iname, grams, type:'other', pctDesc:(parseFloat(ei.pct)||0).toFixed(1)+'% s/harina receta'});
+      }
+      elabTotal+=grams;
+    });
+
+    elabCalcs.push({name:elab.name, ings:elabIngs, total:elabTotal});
+  });
+
+  // ── PER-SECTION DATA ──
+
+  // Section: each elaboration
+  // Section: masa final
+  // summaryRows: raw totals per ingredient, NO elaboration deductions
+  const summaryRows=[];
+  (r.flours||[]).forEach(f=>{
+    const total=fG[f.id]||0;
+    summaryRows.push({name:f.name, tag:'flour', pct:(parseFloat(f.pct)||0).toFixed(1)+'% base', grams:total});
+  });
+  (r.ings||[]).forEach(ing=>{
+    const pct=parseFloat(ing.pct)||0;
+    const total=flourG*pct/100;
+    const isWater=/^agua$/i.test((ing.name||'').trim());
+    summaryRows.push({name:ing.name, tag:isWater?'water':null, pct:pct.toFixed(2)+'%', grams:total});
+  });
+
+  // finalRows: each ingredient with elaboration deductions shown
+  const finalRows=[];
+  (r.flours||[]).forEach(f=>{
+    const total=fG[f.id]||0;
+    const ded=deductF[f.id]||0;
+    finalRows.push({name:f.name, tag:'flour', pct:(parseFloat(f.pct)||0).toFixed(1)+'% base', total, ded, final:total-ded});
+  });
+  (r.ings||[]).forEach(ing=>{
+    const pct=parseFloat(ing.pct)||0;
+    const total=flourG*pct/100;
+    const ded=deductO[ing.id]||0;
+    const isWater=/^agua$/i.test((ing.name||'').trim());
+    const waterDed=isWater?deductW:0;
+    const totalDed=ded+waterDed;
+    finalRows.push({name:ing.name, tag:isWater?'water':null, pct:pct.toFixed(2)+'%', total, ded:totalDed, final:total-totalDed});
+  });
+
+  // Cache for tab switching
+  lastCalc={elabCalcs, finalRows, summaryRows, totalMass, flourG, deductW, r,
+    amasadoData:buildAmasadoData(r, fG, deductF, deductW, deductO, flourG, elabCalcs)};
+
+  resWrap.style.display='block';
+  buildResTabs(elabCalcs);
+  renderResTab(resTab);
+}
+
+function buildResTabs(elabCalcs){
+  const nav=document.getElementById('d_res_nav');
+  const tabs=['Resumen',...elabCalcs.map(e=>e.name),'Masa final'];
+  resTab=Math.min(resTab,tabs.length-1);
+  nav.innerHTML=tabs.map((t,i)=>`<button class="res-tab${i===resTab?' active':''}" onclick="setResTab(${i})">${esc(t)}</button>`).join('');
+}
+
+function setResTab(i){ resTab=i; buildResTabs(lastCalc.elabCalcs); renderResTab(i); }
+
+function renderResTab(i){
+  if(!lastCalc) return;
+  const {elabCalcs,finalRows,summaryRows,totalMass}=lastCalc;
+  const body=document.getElementById('d_res_body');
+
+  if(i===0){
+    // Resumen: raw totals, no elaboration deductions, no elaboration blocks
+    let html='<div class="card" style="padding:.85rem 1rem">';
+    summaryRows.forEach(row=>{
+      const tagHtml=row.tag==='flour'?`<span class="tag tag-flour" style="font-size:.58rem">harina</span>`:row.tag==='water'?`<span class="tag tag-water" style="font-size:.58rem">agua</span>`:'';
+      html+=`<div class="irr">
+        <div class="irr-left"><div class="name">${esc(row.name)} ${tagHtml}</div><div class="pct">${esc(row.pct)}</div></div>
+        <div class="irr-right"><div class="grams">${row.grams.toFixed(1)} g</div></div>
+      </div>`;
+    });
+    html+=`</div><div class="total-bar"><span class="total-bar-lbl">Masa total</span><span class="total-bar-val">${totalMass.toFixed(0)} g</span></div>`;
+    body.innerHTML=html;
+
+  } else if(i<=elabCalcs.length){
+    // One elaboration detail
+    const elab=elabCalcs[i-1];
+    let html='<div class="card" style="padding:.85rem 1rem">';
+    elab.ings.forEach(ei=>{
+      const tagHtml=ei.type==='flour'?`<span class="tag tag-flour" style="font-size:.58rem">harina</span>`:ei.type==='water'?`<span class="tag tag-water" style="font-size:.58rem">agua</span>`:'';
+      html+=`<div class="irr">
+        <div class="irr-left"><div class="name">${esc(ei.name)} ${tagHtml}</div><div class="pct">${ei.pctDesc}</div></div>
+        <div class="irr-right"><div class="grams">${ei.grams.toFixed(1)} g</div></div>
+      </div>`;
+    });
+    html+=`</div><div class="total-bar"><span class="total-bar-lbl">Total elaboración</span><span class="total-bar-val">${elab.total.toFixed(0)} g</span></div>`;
+    body.innerHTML=html;
+
+  } else {
+    // Masa final: all ingredients (flours, others, water) with deductions + elaborations as single rows
+    let html='<div class="card" style="padding:.85rem 1rem;margin-bottom:.5rem">';
+    // Flour rows (with deductions)
+    finalRows.filter(fr=>fr.tag==='flour').forEach(fr=>{
+      html+=`<div class="irr">
+        <div class="irr-left"><div class="name">${esc(fr.name)} <span class="tag tag-flour" style="font-size:.58rem">harina</span></div><div class="pct">${esc(fr.pct)}</div></div>
+        <div class="irr-right">
+          <div class="grams">${fr.final.toFixed(1)} g</div>
+          ${fr.ded>0?`<div class="sub">Total: ${fr.total.toFixed(1)} g<br>Elab.: −${fr.ded.toFixed(1)} g</div>`:''}
+        </div>
+      </div>`;
+    });
+    // Other ingredient rows, excluding water (with deductions), then elaborations as rows, then water last
+    const waterRows=finalRows.filter(fr=>fr.tag==='water');
+    const otherRows=finalRows.filter(fr=>fr.tag!=='flour'&&fr.tag!=='water');
+    otherRows.forEach(fr=>{
+      html+=`<div class="irr">
+        <div class="irr-left"><div class="name">${esc(fr.name)}</div><div class="pct">${esc(fr.pct)}</div></div>
+        <div class="irr-right">
+          <div class="grams">${fr.final.toFixed(1)} g</div>
+          ${fr.ded>0?`<div class="sub">Total: ${fr.total.toFixed(1)} g<br>Elab.: −${fr.ded.toFixed(1)} g</div>`:''}
+        </div>
+      </div>`;
+    });
+    // Elaborations as single rows (total weight only)
+    elabCalcs.forEach(elab=>{
+      html+=`<div class="irr">
+        <div class="irr-left"><div class="name">${esc(elab.name)} <span class="tag tag-elab" style="font-size:.58rem">elaboración</span></div><div class="pct">ver desglose en su pestaña</div></div>
+        <div class="irr-right"><div class="grams">${elab.total.toFixed(1)} g</div></div>
+      </div>`;
+    });
+    // Water rows last (with deductions)
+    waterRows.forEach(fr=>{
+      html+=`<div class="irr">
+        <div class="irr-left"><div class="name">${esc(fr.name)} <span class="tag tag-water" style="font-size:.58rem">agua</span></div><div class="pct">${esc(fr.pct)}</div></div>
+        <div class="irr-right">
+          <div class="grams">${fr.final.toFixed(1)} g</div>
+          ${fr.ded>0?`<div class="sub">Total: ${fr.total.toFixed(1)} g<br>Elab.: −${fr.ded.toFixed(1)} g</div>`:''}
+        </div>
+      </div>`;
+    });
+    const masaFinalTotal=elabCalcs.reduce((s,e)=>s+e.total,0)+finalRows.reduce((s,r)=>s+r.final,0);
+    html+=`</div><div class="total-bar"><span class="total-bar-lbl">Masa total</span><span class="total-bar-val">${masaFinalTotal.toFixed(0)} g</span></div>`;
+    body.innerHTML=html;
+  }
+}
+
+function buildAmasadoData(r, fG, deductF, deductW, deductO, flourG, elabCalcs){
+  const ings=[];
+  // Flours (final)
+  (r.flours||[]).forEach(f=>{ const m=(fG[f.id]||0)-(deductF[f.id]||0); ings.push({name:f.name,mass:+m.toFixed(1),temp:20,cp:1.80}); });
+  // Other ings except water (final)
+  (r.ings||[]).forEach(ing=>{
+    if(/^agua$/i.test((ing.name||'').trim())) return;
+    const tot=flourG*(parseFloat(ing.pct)||0)/100;
+    const ded=deductO[ing.id]||0;
+    ings.push({name:ing.name,mass:+(tot-ded).toFixed(1),temp:20,cp:1.00});
+  });
+  // Elaborations as blocks
+  elabCalcs.forEach(e=>{ ings.push({name:e.name,mass:+e.total.toFixed(1),temp:18,cp:3.20}); });
+  // Water (final)
+  const wi=(r.ings||[]).find(i=>/^agua$/i.test((i.name||'').trim()));
+  const wTot=wi?flourG*(parseFloat(wi.pct)||0)/100:0;
+  const wFinal=Math.max(0,+(wTot-deductW).toFixed(1));
+  return {recipeName:r.name, ings, waterMass:wFinal};
+}
+
+function goToAmasado(){
+  if(!lastCalc) return;
+  const d=lastCalc.amasadoData;
+  aIngs=d.ings.map((i,j)=>({id:aIngId++,...i}));
+  document.getElementById('a_wm').value=d.waterMass;
+  aRenderIngs(); aCalc();
+  const b=document.getElementById('a_banner');
+  b.textContent='✓ Ingredientes cargados desde: '+d.recipeName;
+  b.classList.add('show');
+  switchTab('amasado');
+}
+
+// ═══════════════════════════════════════
+// MODAL — RECIPE EDITOR
+// ═══════════════════════════════════════
+function openNewRecipe(){
+  editingId=null; rFlours=[]; rIngs=[]; rElabs=[]; rFId=0; rIId=0; rEId=0; rEIId=0;
+  document.getElementById('r_name').value='';
+  document.getElementById('r_notes').value='';
+  document.getElementById('modal_title').textContent='Nueva receta';
+  rRenderAll();
+  document.getElementById('modal_overlay').classList.add('open');
+}
+
+function editCurrent(){
+  const r=recipes.find(x=>x.id===activeId); if(!r) return;
+  editingId=r.id;
+  rFlours=(r.flours||[]).map(f=>({...f}));
+  rIngs=(r.ings||[]).map(i=>({...i}));
+  rElabs=(r.elabs||[]).map(e=>({...e,ings:(e.ings||[]).map(i=>({...i}))}));
+  rFId=Math.max(0,...rFlours.map(f=>+f.id+1),1);
+  rIId=Math.max(0,...rIngs.map(i=>+i.id+1),1);
+  rEId=Math.max(0,...rElabs.map(e=>+e.id+1),1);
+  rEIId=Math.max(0,...rElabs.flatMap(e=>(e.ings||[]).map(i=>+i.id+1)),1);
+  document.getElementById('r_name').value=r.name||'';
+  document.getElementById('r_notes').value=r.notes||'';
+  document.getElementById('modal_title').textContent='Editar receta';
+  resTab=0;
+  rRenderAll();
+  document.getElementById('modal_overlay').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('modal_overlay').classList.remove('open'); editingId=null; }
+
+function rRenderAll(){ rRenderFlours(); rRenderIngs(); rRenderElabs(); }
+
+// Flours
+function rAddFlour(n='',p=0){ rFlours.push({id:rFId++,name:n,pct:p}); rRenderFlours(); }
+function rDelFlour(id){ rFlours=rFlours.filter(x=>x.id!==id); rRenderFlours(); rRenderElabs(); }
+function rSetFlour(id,f,v){ const x=rFlours.find(x=>x.id===id); if(x){ x[f]=f==='name'?v:(parseFloat(v)||0); } if(f!=='name') rUpdateFsum(); else rRenderElabSelects(); }
+function rUpdateFsum(){
+  const s=rFlours.reduce((a,f)=>a+(parseFloat(f.pct)||0),0);
+  const el=document.getElementById('r_fsum');
+  el.textContent=s.toFixed(1)+' / 100%';
+  el.className='fs-pill '+(Math.abs(s-100)<0.01?'fs-ok':'fs-err');
+}
+function rRenderFlours(){
+  const el=document.getElementById('r_flour_list'); el.innerHTML='';
+  rFlours.forEach(f=>{
+    const d=document.createElement('div');
+    d.style.cssText='display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 30px;gap:5px;align-items:center;margin-bottom:5px';
+    d.innerHTML=
+      `<input type="text" value="${esc(f.name)}" placeholder="Harina de fuerza, Sémola…" style="font-size:.85rem;padding:.45rem .65rem" oninput="rSetFlour(${f.id},'name',this.value)">` +
+      `<input type="number" value="${f.pct}" min="0" max="100" step="0.1" style="font-size:.85rem;padding:.45rem .65rem" oninput="rSetFlour(${f.id},'pct',this.value)">` +
+      `<button class="btn btn-icon btn-ghost" onclick="rDelFlour(${f.id})"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`;
+    el.appendChild(d);
+  });
+  rUpdateFsum();
+}
+
+// Ings
+function rAddIng(n='',p=0){ rIngs.push({id:rIId++,name:n,pct:p}); rRenderIngs(); rRenderElabs(); }
+function rDelIng(id){ rIngs=rIngs.filter(x=>x.id!==id); rRenderIngs(); rRenderElabs(); }
+function rSetIng(id,f,v){ const x=rIngs.find(x=>x.id===id); if(x) x[f]=f==='name'?v:(parseFloat(v)||0); }
+function rRenderIngs(){
+  const el=document.getElementById('r_ing_list'); el.innerHTML='';
+  rIngs.forEach(i=>{
+    const d=document.createElement('div');
+    d.style.cssText='display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 30px;gap:5px;align-items:center;margin-bottom:5px';
+    d.innerHTML=
+      `<input type="text" value="${esc(i.name)}" placeholder="Agua, Sal, Levadura…" style="font-size:.85rem;padding:.45rem .65rem" oninput="rSetIng(${i.id},'name',this.value)">` +
+      `<input type="number" value="${i.pct}" min="0" step="0.01" style="font-size:.85rem;padding:.45rem .65rem" oninput="rSetIng(${i.id},'pct',this.value)">` +
+      `<button class="btn btn-icon btn-ghost" onclick="rDelIng(${i.id})"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`;
+    el.appendChild(d);
+  });
+}
+
+// Elaborations
+function rAddElab(){
+  rElabs.push({id:rEId++,name:'',ings:[]});
+  rRenderElabs();
+}
+function rDelElab(id){ rElabs=rElabs.filter(x=>x.id!==id); rRenderElabs(); }
+function rSetElabName(id,v){ const e=rElabs.find(x=>x.id===id); if(e) e.name=v; }
+
+function rAddElabIng(elabId,type){
+  const e=rElabs.find(x=>x.id===elabId); if(!e) return;
+  const ei={id:rEIId++,type};
+  if(type==='flour'){ ei.flourId=rFlours[0]?.id??null; ei.pct=20; }
+  else if(type==='water'){ ei.pct=30; }
+  else { ei.ingId=rIngs[0]?.id??null; ei.name=''; ei.pct=1; }
+  e.ings.push(ei);
+  rRenderElabs();
+}
+function rDelElabIng(elabId,eiId){
+  const e=rElabs.find(x=>x.id===elabId); if(!e) return;
+  e.ings=e.ings.filter(x=>x.id!==eiId);
+  rRenderElabs();
+}
+function rSetElabIng(elabId,eiId,field,val){
+  const e=rElabs.find(x=>x.id===elabId); if(!e) return;
+  const ei=e.ings.find(x=>x.id===eiId); if(!ei) return;
+  if(field==='flourId'||field==='ingId') ei[field]=parseInt(val);
+  else if(field==='name') ei.name=val;
+  else ei[field]=parseFloat(val)||0;
+}
+
+function rRenderElabSelects(){ rRenderElabs(); }
+
+function rRenderElabs(){
+  const el=document.getElementById('r_elab_list');
+  const empty=document.getElementById('r_elab_empty');
+  if(empty) empty.style.display=rElabs.length?'none':'block';
+  el.innerHTML='';
+
+  const flourOpts=rFlours.length
+    ?rFlours.map(f=>`<option value="${f.id}">${esc(f.name||'Harina')}</option>`).join('')
+    :'<option value="">— añade harinas primero —</option>';
+
+  const ingOpts=rIngs.length
+    ?rIngs.map(i=>`<option value="${i.id}">${esc(i.name||'Ingrediente')}</option>`).join('')
+    :'<option value="">— sin ingredientes —</option>';
+
+  rElabs.forEach(elab=>{
+    const div=document.createElement('div');
+    div.className='eeb';
+
+    // elab ings rows
+    let ingRows='';
+    (elab.ings||[]).forEach(ei=>{
+      if(ei.type==='flour'){
+        ingRows+=`<div class="eeb-ing-row">
+          <select style="font-size:.82rem;padding:.4rem .6rem;padding-right:1.8rem" onchange="rSetElabIng(${elab.id},${ei.id},'flourId',this.value)">
+            ${rFlours.map(f=>`<option value="${f.id}"${f.id===ei.flourId?' selected':''}>${esc(f.name||'Harina')}</option>`).join('')}
+          </select>
+          <input type="number" value="${ei.pct}" min="0" max="100" step="0.1" placeholder="% de esa harina" oninput="rSetElabIng(${elab.id},${ei.id},'pct',this.value)">
+          <span style="font-size:.68rem;color:var(--text3);display:flex;align-items:center;padding:0 3px">% de esa harina</span>
+          <button class="btn btn-icon btn-ghost" onclick="rDelElabIng(${elab.id},${ei.id})"><svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        </div>`;
+      } else if(ei.type==='water'){
+        ingRows+=`<div class="eeb-ing-row">
+          <div style="display:flex;align-items:center;gap:5px;padding:.4rem .6rem;background:var(--surface3);border:1.5px solid var(--border2);border-radius:8px;font-size:.82rem;color:var(--text2);font-weight:500">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1C6 1 2 5 2 7.5a4 4 0 008 0C10 5 6 1 6 1z" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>Agua
+          </div>
+          <input type="number" value="${ei.pct}" min="0" step="0.1" placeholder="% s/harina elab." oninput="rSetElabIng(${elab.id},${ei.id},'pct',this.value)">
+          <span style="font-size:.68rem;color:var(--text3);display:flex;align-items:center;padding:0 3px">% s/harina elab.</span>
+          <button class="btn btn-icon btn-ghost" onclick="rDelElabIng(${elab.id},${ei.id})"><svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        </div>`;
+      } else {
+        ingRows+=`<div class="eeb-ing-row">
+          <select style="font-size:.82rem;padding:.4rem .6rem;padding-right:1.8rem" onchange="rSetElabIng(${elab.id},${ei.id},'ingId',this.value)">
+            ${rIngs.map(i=>`<option value="${i.id}"${i.id===ei.ingId?' selected':''}>${esc(i.name||'Ingrediente')}</option>`).join('')}
+          </select>
+          <input type="number" value="${ei.pct}" min="0" step="0.01" placeholder="% s/harina" oninput="rSetElabIng(${elab.id},${ei.id},'pct',this.value)">
+          <span style="font-size:.68rem;color:var(--text3);display:flex;align-items:center;padding:0 3px">% s/harina</span>
+          <button class="btn btn-icon btn-ghost" onclick="rDelElabIng(${elab.id},${ei.id})"><svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+        </div>`;
+      }
+    });
+
+    div.innerHTML=`
+      <div class="eeb-header">
+        <input type="text" class="eeb-name-input" value="${esc(elab.name)}" placeholder="Nombre (prefermento, escaldado…)" oninput="rSetElabName(${elab.id},this.value)">
+        <button class="btn btn-icon btn-ghost btn-danger" onclick="rDelElab(${elab.id})"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="eeb-ings">
+        <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:4px">
+          <span class="chdr">Ingrediente</span><span class="chdr">Cantidad</span><span class="chdr"></span><span></span>
+        </div>
+        ${ingRows}
+      </div>
+      <div style="display:flex;gap:5px;margin-top:.5rem;flex-wrap:wrap">
+        <button class="btn btn-xs" onclick="rAddElabIng(${elab.id},'flour')" ${!rFlours.length?'disabled':''}>+ Harina</button>
+        <button class="btn btn-xs" onclick="rAddElabIng(${elab.id},'water')">+ Agua</button>
+        <button class="btn btn-xs" onclick="rAddElabIng(${elab.id},'other')" ${!rIngs.length?'disabled title="Añade primero otros ingredientes a la receta"':''}>+ Otro ingrediente</button>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+function saveRecipe(){
+  const name=document.getElementById('r_name').value.trim();
+  if(!name){ alert('Ponle un nombre a la receta.'); return; }
+  if(!rFlours.length){ alert('Añade al menos una harina.'); return; }
+  const fsum=rFlours.reduce((s,f)=>s+(parseFloat(f.pct)||0),0);
+  if(Math.abs(fsum-100)>0.01){ alert('Las harinas deben sumar exactamente 100% (ahora suman '+fsum.toFixed(1)+'%).'); return; }
+
+  // Fix 3+4: validate elaboration flour usage
+  // Accumulate % used per flourId across all elaborations
+  const flourUsed={}; // flourId -> total pct used
+  for(const elab of rElabs){
+    for(const ei of (elab.ings||[])){
+      if(ei.type==='flour'){
+        const pct=parseFloat(ei.pct)||0;
+        if(pct<=0){ alert('La harina de "'+elab.name+'" no puede ser 0%. Corrige el porcentaje.'); return; }
+        flourUsed[ei.flourId]=(flourUsed[ei.flourId]||0)+pct;
+        if(flourUsed[ei.flourId]>100+0.01){
+          const fname=rFlours.find(f=>f.id===ei.flourId)?.name||'harina';
+          alert('El porcentaje total de "'+fname+'" usado en elaboraciones supera el 100% ('+flourUsed[ei.flourId].toFixed(1)+'%). Reduce los porcentajes.'); return;
+        }
+      }
+    }
+  }
+  const recId = editingId || uid();
+  const rec={
+    id: recId,
+    name,
+    notes:document.getElementById('r_notes').value.trim(),
+    flours:rFlours.map(f=>({...f})),
+    ings:rIngs.map(i=>({...i})),
+    elabs:rElabs.map(e=>({...e,ings:(e.ings||[]).map(i=>({...i}))})),
+  };
+  if(editingId){
+    const idx=recipes.findIndex(x=>x.id===editingId);
+    if(idx>=0) recipes[idx]=rec; else recipes.push(rec);
+  } else {
+    recipes.push(rec);
+  }
+  activeId=recId;
+  editingId=null;
+  save();
+  closeModal();
+  renderList();
+  showDetail();
+}
+
+function showDeleteConfirm(){
+  document.getElementById('del_btn_1').style.display='none';
+  document.getElementById('del_confirm_box').style.display='block';
+}
+function hideDeleteConfirm(){
+  document.getElementById('del_confirm_box').style.display='none';
+  document.getElementById('del_btn_1').style.display='';
+}
+function deleteCurrent(){
+  const r=recipes.find(x=>x.id===activeId);
+  if(!r) return;
+  recipes=recipes.filter(x=>x.id!==activeId);
+  activeId=null;
+  save();
+  renderList();
+  hideDeleteConfirm();
+  ['recetas','amasado','mezcla'].forEach(t=>{
+    document.getElementById('page_'+t).classList.toggle('active',t==='recetas');
+    document.getElementById('nav_'+t).classList.toggle('active',t==='recetas');
+  });
+  document.getElementById('topbar_sub').textContent=SUBS['recetas'];
+  showList();
+}
+
+// ═══════════════════════════════════════
+// AMASADO
+// ═══════════════════════════════════════
+function aAddIng(n='',m=100,t=20,c=1.80){
+  aIngs.push({id:aIngId++,name:n,mass:m,temp:t,cp:c});
+  aRenderIngs(); aCalc();
+}
+function aDelIng(id){ aIngs=aIngs.filter(x=>x.id!==id); aRenderIngs(); aCalc(); }
+function aSet(id,f,v){
+  const i=aIngs.find(x=>x.id===id); if(!i) return;
+  i[f]=f==='name'?v:(parseFloat(v)||0);
+  if(f==='name') document.querySelectorAll('.cpname').forEach((el,j)=>{ if(aIngs[j]) el.textContent=aIngs[j].name||'—'; });
+  aCalc();
+}
+function aRenderIngs(){
+  const el=document.getElementById('a_ing_list'); el.innerHTML='';
+  aIngs.forEach(ing=>{
+    const d=document.createElement('div');
+    d.style.cssText='display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;align-items:center;margin-bottom:5px';
+    d.innerHTML=
+      `<input type="text" value="${esc(ing.name)}" placeholder="Ingrediente" style="font-size:.83rem;padding:.48rem .62rem" oninput="aSet(${ing.id},'name',this.value)">` +
+      `<input type="number" value="${ing.mass}" min="0" step="1" style="font-size:.83rem;padding:.48rem .62rem" oninput="aSet(${ing.id},'mass',this.value)">` +
+      `<input type="number" value="${ing.temp}" step="0.5" style="font-size:.83rem;padding:.48rem .62rem" oninput="aSet(${ing.id},'temp',this.value)">` +
+      `<button class="btn btn-icon btn-ghost" onclick="aDelIng(${ing.id})"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`;
+    el.appendChild(d);
+  });
+  // cp list
+  const cp=document.getElementById('a_cp_list'); cp.innerHTML='';
+  aIngs.forEach(ing=>{
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:8px;padding:.32rem 0;border-bottom:1px solid var(--border)';
+    d.innerHTML=
+      `<span class="cpname" style="flex:1;font-size:.8rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(ing.name||'—')}</span>` +
+      `<input type="number" value="${ing.cp}" min="0.01" step="0.01" style="width:78px;font-size:.83rem;padding:.38rem .55rem" oninput="aSet(${ing.id},'cp',this.value)">` +
+      `<span style="font-size:.65rem;color:var(--text3);white-space:nowrap">J/g·K</span>`;
+    cp.appendChild(d);
+  });
+}
+function aCalc(){
+  const ttgt=parseFloat(document.getElementById('a_ttgt').value);
+  const wm=parseFloat(document.getElementById('a_wm').value);
+  const err=document.getElementById('a_err'),warn=document.getElementById('a_warn'),res=document.getElementById('a_result');
+  err.classList.remove('show'); warn.classList.remove('show'); res.style.display='none';
+  if(isNaN(ttgt)||isNaN(wm)||wm<=0){ err.textContent='Introduce una masa de agua válida.'; err.classList.add('show'); return; }
+  if(!aIngs.length) return;
+  let Hs=0,Ms=0;
+  aIngs.forEach(i=>{ if(i.mass>=0&&i.cp>0){ Hs+=i.mass*i.cp*i.temp; Ms+=i.mass; } });
+  const Mt=Ms+wm, Tw=(ttgt*Mt*CP_W-Hs)/(wm*CP_W);
+  if(!isFinite(Tw)){ err.textContent='No se puede calcular con estos valores.'; err.classList.add('show'); return; }
+  document.getElementById('a_tw').textContent=Tw.toFixed(1);
+  document.getElementById('a_mt').textContent=Mt.toFixed(0);
+  document.getElementById('a_hi').textContent=Hs.toFixed(0);
+  res.style.display='block';
+  if(Tw<0){ warn.textContent='⚠ Temperatura negativa ('+Tw.toFixed(1)+' °C). Ajusta los parámetros.'; warn.classList.add('show'); }
+  else if(Tw>100){ warn.textContent='⚠ Temperatura superior a 100 °C ('+Tw.toFixed(1)+' °C). Ajusta los parámetros.'; warn.classList.add('show'); }
+  const btn=document.getElementById('a_to_mezcla');
+  if(Tw>0&&Tw<100){ btn.style.display='inline-flex'; btn.textContent='Mezclar a '+Tw.toFixed(1)+' °C →'; pendingMezclaTemp=Tw; }
+  else btn.style.display='none';
+}
+function aGoMezcla(){ switchTab('mezcla'); }
+document.getElementById('a_ttgt').addEventListener('input',aCalc);
+document.getElementById('a_wm').addEventListener('input',aCalc);
+// defaults
+aAddIng('Harina',500,20,1.80);
+aAddIng('Masa madre',100,18,3.20);
+
+// ═══════════════════════════════════════
+// MEZCLA
+// ═══════════════════════════════════════
+const msl=document.getElementById('m_sl');
+function mRangeUpdate(){
+  const tc=parseFloat(document.getElementById('m_tc').value)||0;
+  const th=parseFloat(document.getElementById('m_th').value)||100;
+  const mn=Math.ceil(tc+0.5),mx=Math.floor(th-0.5);
+  msl.min=mn; msl.max=mx;
+  document.getElementById('m_rmin').textContent=mn+'°C';
+  document.getElementById('m_rmax').textContent=mx+'°C';
+  if(+msl.value<mn) msl.value=mn;
+  if(+msl.value>mx) msl.value=mx;
+  mSyncSlider();
+}
+function mSyncSlider(){
+  const v=+msl.value,mn=+msl.min,mx=+msl.max;
+  const pct=mx>mn?(v-mn)/(mx-mn)*100:0;
+  msl.style.setProperty('--pct',pct.toFixed(1)+'%');
+  document.getElementById('m_tdisp').textContent=v.toFixed(1)+'°C';
+}
+function mFmt(v,unit){
+  if(unit==='g') return v.toFixed(0)+' g';
+  if(unit==='ml') return (v*1000).toFixed(0)+' mL';
+  return v<1?v.toFixed(3)+' L':v.toFixed(2)+' L';
+}
+function mCalc(){
+  const tc=parseFloat(document.getElementById('m_tc').value);
+  const th=parseFloat(document.getElementById('m_th').value);
+  const tt=parseFloat(msl.value);
+  const totR=parseFloat(document.getElementById('m_tot').value);
+  const unit=document.getElementById('m_unit').value;
+  const tot=unit==='ml'?totR/1000:unit==='g'?totR/1000:totR;
+  const err=document.getElementById('m_err'),res=document.getElementById('m_result');
+  err.classList.remove('show'); res.style.display='none';
+  if(isNaN(tc)||isNaN(th)||isNaN(tt)||isNaN(tot)||tot<=0) return;
+  if(th<=tc){ err.textContent='La temperatura caliente debe ser mayor que la fría.'; err.classList.add('show'); return; }
+  if(tt<=tc||tt>=th){ err.textContent='La temperatura objetivo debe estar entre la fría y la caliente.'; err.classList.add('show'); return; }
+  const fH=(tt-tc)/(th-tc),fC=1-fH,vH=fH*tot,vC=fC*tot;
+  document.getElementById('m_rc').textContent=mFmt(vC,unit);
+  document.getElementById('m_rh').textContent=mFmt(vH,unit);
+  document.getElementById('m_uc').textContent='≈ '+(fC*100).toFixed(1)+'%';
+  document.getElementById('m_uh').textContent='≈ '+(fH*100).toFixed(1)+'%';
+  document.getElementById('m_bc').style.width=(fC*100)+'%';
+  document.getElementById('m_bh').style.width=(fH*100)+'%';
+  document.getElementById('m_lc').textContent='Fría '+(fC*100).toFixed(1)+'%';
+  document.getElementById('m_lh').textContent='Caliente '+(fH*100).toFixed(1)+'%';
+  res.style.display='block';
+}
+mRangeUpdate(); mCalc();
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+document.getElementById('modal_overlay').addEventListener('click',e=>{ if(e.target===document.getElementById('modal_overlay')) closeModal(); });
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+load(); renderList();
+</script>
+</body>
+</html>
