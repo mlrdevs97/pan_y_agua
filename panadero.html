@@ -1036,6 +1036,12 @@ function saveRecipe(){
   const fsum=rFlours.reduce((s,f)=>s+(parseFloat(f.pct)||0),0);
   if(Math.abs(fsum-100)>0.01){ alert('Las harinas deben sumar exactamente 100% (ahora suman '+fsum.toFixed(1)+'%).'); return; }
 
+  // Validate elaborations: name and at least one ingredient required
+  for(const elab of rElabs){
+    if(!elab.name.trim()){ alert('Una elaboración no tiene nombre. Ponle un nombre antes de guardar.'); return; }
+    if(!(elab.ings||[]).length){ alert('La elaboración "'+elab.name+'" no tiene ingredientes. Añade al menos uno o elimínala.'); return; }
+  }
+
   // Fix 3+4: validate elaboration flour usage
   // Accumulate % used per flourId across all elaborations
   const flourUsed={}; // flourId -> total pct used
