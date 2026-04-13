@@ -231,7 +231,14 @@ function buildResTabs(elabCalcs){
   nav.innerHTML=tabs.map((t,i)=>`<button class="res-tab${i===resTab?' active':''}" onclick="setResTab(${i})">${esc(t)}</button>`).join('');
 }
 
-function setResTab(i){ resTab=i; buildResTabs(lastCalc.elabCalcs); renderResTab(i); }
+function setResTab(i){
+  resTab=i;
+  buildResTabs(lastCalc.elabCalcs);
+  renderResTab(i);
+  const nav=document.getElementById('d_res_nav');
+  const activeBtn=nav.querySelectorAll('.res-tab')[i];
+  if(activeBtn) activeBtn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
 
 function renderResTab(i){
   if(!lastCalc) return;
