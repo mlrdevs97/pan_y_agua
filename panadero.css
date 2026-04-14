@@ -171,3 +171,61 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .res-nav::-webkit-scrollbar{display:none}
 .res-tab{flex:0 0 auto;min-width:72px;padding:.42rem .7rem;border:none;background:transparent;border-radius:7px;font-family:'Inter',sans-serif;font-size:.68rem;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;text-align:center;-webkit-tap-highlight-color:transparent;scroll-snap-align:start;white-space:nowrap}
 .res-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.09)}
+
+/* ── RECIPE LIST ── */
+#rc_count{font-size:.78rem;font-weight:500;color:var(--text2)}
+.list-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.list-actions{display:flex;gap:6px}
+
+/* ── DETAIL VIEW ── */
+#v_detail{display:none}
+.det-hdr{display:flex;align-items:center;gap:7px;margin-bottom:.85rem}
+.det-hdr-title{flex:1;min-width:0}
+#det_name{font-family:'Lora',serif;font-size:1.15rem;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#det_meta{font-size:.68rem;color:var(--text3);margin-top:1px}
+.prod-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field-flush{margin:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:.65rem}
+#d_res_wrap{display:none}
+.btn-goto-amasado{margin-top:.75rem;margin-bottom:.75rem}
+
+/* ── DELETE CONFIRM ── */
+#del_confirm_wrap{margin-bottom:.75rem}
+#del_confirm_box{display:none;background:var(--red-l);border:1px solid #F5C6C6;border-radius:var(--r);padding:.75rem .9rem}
+.del-confirm-text{font-size:.8rem;color:var(--red);margin-bottom:.6rem}
+.del-confirm-actions{display:flex;gap:7px}
+.btn-flex{flex:1;justify-content:center}
+.btn-danger-fill{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-danger-fill:hover{background:#a02020;border-color:#a02020}
+
+/* ── AMASADO ── */
+.col-hdr-3{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:5px}
+#a_result{display:none}
+.result-actions{text-align:center;margin-top:.75rem}
+#a_to_mezcla{display:none}
+
+/* ── MEZCLA ── */
+#m_tdisp{font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--accent)}
+#m_tot{flex:1;min-width:0}
+#m_unit{flex:0 0 auto;width:auto}
+#m_result{display:none}
+.mix-results{margin-top:.6rem}
+.irr-label{display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dot-cold{background:var(--blue)}
+.dot-hot{background:var(--accent)}
+
+/* ── NOTAS ── */
+#r_notes{resize:none;font-size:.85rem}
+
+/* ── SECTION HEADERS ── */
+.section-hdr-hint{font-weight:400;opacity:.65}
+.section-hdr-right{display:flex;align-items:center;gap:7px}
+
+/* ── COL HEADERS ── */
+.col-hdr-2{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:4px}
+
+/* ── ELABORATION HINTS ── */
+.field-hint{font-size:.65rem;color:var(--text3);margin-top:.35rem}
+#r_elab_empty{font-size:.7rem;color:var(--text3);padding:.3rem 0}
+.elab-hint{font-size:.65rem;color:var(--text3);margin-top:.5rem;background:var(--surface2);border-radius:var(--r);padding:.6rem .8rem;line-height:1.65}

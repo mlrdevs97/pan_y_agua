@@ -25,9 +25,9 @@
 
   <!-- LIST -->
   <div id="v_list">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
-      <span style="font-size:.78rem;font-weight:500;color:var(--text2)" id="rc_count"></span>
-      <div style="display:flex;gap:6px">
+    <div class="list-toolbar">
+      <span id="rc_count"></span>
+      <div class="list-actions">
         <button class="btn btn-sm" onclick="importJSON()">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2M8 3v8M5 8l3 3 3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Importar
@@ -42,15 +42,15 @@
   </div>
 
   <!-- DETAIL -->
-  <div id="v_detail" style="display:none">
+  <div id="v_detail">
     <!-- header -->
-    <div style="display:flex;align-items:center;gap:7px;margin-bottom:.85rem">
+    <div class="det-hdr">
       <button class="btn btn-ghost btn-icon btn-sm" onclick="showList()">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <div style="flex:1;min-width:0">
-        <div style="font-family:'Lora',serif;font-size:1.15rem;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="det_name"></div>
-        <div style="font-size:.68rem;color:var(--text3);margin-top:1px" id="det_meta"></div>
+      <div class="det-hdr-title">
+        <div id="det_name"></div>
+        <div id="det_meta"></div>
       </div>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="editCurrent()" title="Editar">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5a1.5 1.5 0 012.12 2.12L5 13.25 2 14l.75-3L11.5 2.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -63,38 +63,38 @@
     <!-- production inputs -->
     <div class="card">
       <div class="card-hdr">Producción</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div class="field" style="margin:0">
+      <div class="prod-grid">
+        <div class="field field-flush">
           <label class="lbl">Nº de piezas</label>
           <input type="number" id="d_pieces" value="10" min="1" step="1" oninput="calcDetail()">
         </div>
-        <div class="field" style="margin:0">
+        <div class="field field-flush">
           <label class="lbl">Peso pieza (g)</label>
           <input type="number" id="d_weight" value="500" min="1" step="1" oninput="calcDetail()">
         </div>
       </div>
-      <div id="d_chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:.65rem"></div>
+      <div id="d_chips" class="chips"></div>
     </div>
 
     <div class="alert alert-err" id="d_err"></div>
 
     <!-- result tabs -->
-    <div id="d_res_wrap" style="display:none">
+    <div id="d_res_wrap">
       <div class="res-nav" id="d_res_nav"></div>
       <div id="d_res_body"></div>
-      <button class="btn btn-primary btn-full" onclick="goToAmasado()" style="margin-top:.75rem;margin-bottom:.75rem">
+      <button class="btn btn-primary btn-full btn-goto-amasado" onclick="goToAmasado()">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
         Calcular temperatura de amasado
       </button>
     </div>
 
-    <div id="del_confirm_wrap" style="margin-bottom:.75rem">
+    <div id="del_confirm_wrap">
       <button class="btn btn-danger btn-sm" id="del_btn_1" onclick="showDeleteConfirm()">Eliminar receta</button>
-      <div id="del_confirm_box" style="display:none;background:var(--red-l);border:1px solid #F5C6C6;border-radius:var(--r);padding:.75rem .9rem">
-        <div style="font-size:.8rem;color:var(--red);margin-bottom:.6rem">¿Eliminar esta receta? Esta acción no se puede deshacer.</div>
-        <div style="display:flex;gap:7px">
-          <button class="btn btn-sm" style="flex:1;justify-content:center" onclick="hideDeleteConfirm()">Cancelar</button>
-          <button class="btn btn-danger btn-sm" style="flex:1;justify-content:center;background:var(--red);color:#fff;border-color:var(--red)" onclick="deleteCurrent()">Sí, eliminar</button>
+      <div id="del_confirm_box">
+        <div class="del-confirm-text">¿Eliminar esta receta? Esta acción no se puede deshacer.</div>
+        <div class="del-confirm-actions">
+          <button class="btn btn-sm btn-flex" onclick="hideDeleteConfirm()">Cancelar</button>
+          <button class="btn btn-danger btn-danger-fill btn-sm btn-flex" onclick="deleteCurrent()">Sí, eliminar</button>
         </div>
       </div>
     </div>
@@ -103,11 +103,11 @@
 
 <!-- ═══════════════════════════════ AMASADO ═══════════════════════════════ -->
 <div class="page" id="page_amasado">
-  <div class="alert alert-ok" id="a_banner" style="margin-bottom:.75rem"></div>
+  <div class="alert alert-ok" id="a_banner"></div>
 
   <div class="card">
     <div class="card-hdr">Temperatura objetivo de la masa</div>
-    <div class="field" style="margin:0">
+    <div class="field field-flush">
       <label class="lbl">T objetivo</label>
       <div class="irow">
         <input type="number" id="a_ttgt" value="24" min="1" max="80" step="0.5" oninput="aCalc()">
@@ -118,7 +118,7 @@
 
   <div class="card">
     <div class="card-hdr">Agua de amasado</div>
-    <div class="field" style="margin:0">
+    <div class="field field-flush">
       <label class="lbl">Masa (g)</label>
       <input type="number" id="a_wm" value="300" min="1" step="1" oninput="aCalc()">
     </div>
@@ -132,25 +132,24 @@
         Añadir
       </button>
     </div>
-    <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:5px">
+    <div class="col-hdr-3">
       <span class="chdr">Nombre</span><span class="chdr">Masa (g)</span><span class="chdr">T (°C)</span><span></span>
     </div>
     <div id="a_ing_list"></div>
   </div>
 
-
   <div class="alert alert-err" id="a_err"></div>
   <div class="alert alert-warn" id="a_warn"></div>
 
-  <div class="card" id="a_result" style="display:none">
+  <div class="card" id="a_result">
     <div class="card-hdr">Temperatura del agua necesaria</div>
     <div class="result-hero">
       <div class="rlbl">T agua de amasado</div>
       <div class="rval" id="a_tw">—</div>
       <div class="runit">°C</div>
     </div>
-    <div style="text-align:center;margin-top:.75rem">
-      <button class="btn btn-sm" id="a_to_mezcla" style="display:none" onclick="aGoMezcla()">
+    <div class="result-actions">
+      <button class="btn btn-sm" id="a_to_mezcla" onclick="aGoMezcla()">
         Calcular mezcla fría / caliente →
       </button>
     </div>
@@ -165,7 +164,7 @@
       <label class="lbl">Agua fría (°C)</label>
       <div class="irow"><input type="number" id="m_tc" value="20" min="0" max="99" step="0.5" oninput="mRangeUpdate();mCalc()"><div class="upill">°C</div></div>
     </div>
-    <div class="field" style="margin:0">
+    <div class="field field-flush">
       <label class="lbl">Agua caliente (°C)</label>
       <div class="irow"><input type="number" id="m_th" value="100" min="1" max="100" step="0.5" oninput="mRangeUpdate();mCalc()"><div class="upill">°C</div></div>
     </div>
@@ -174,7 +173,7 @@
   <div class="card">
     <div class="card-hdr-row">
       <div class="card-hdr">Temperatura objetivo</div>
-      <span style="font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--accent)" id="m_tdisp">40.0°C</span>
+      <span id="m_tdisp">40.0°C</span>
     </div>
     <input type="range" id="m_sl" min="1" max="99" value="40" step="0.5" oninput="mSyncSlider();mCalc()">
     <div class="range-row"><span id="m_rmin">1°C</span><span id="m_rmax">99°C</span></div>
@@ -183,8 +182,8 @@
   <div class="card">
     <div class="card-hdr">Cantidad total a obtener</div>
     <div class="irow">
-      <input type="number" id="m_tot" value="1" min="0.01" step="0.1" style="flex:1;min-width:0" oninput="mCalc()">
-      <select id="m_unit" onchange="mCalc()" style="flex:0 0 auto;width:auto">
+      <input type="number" id="m_tot" value="1" min="0.01" step="0.1" oninput="mCalc()">
+      <select id="m_unit" onchange="mCalc()">
         <option value="l">litros</option>
         <option value="ml">mililitros</option>
         <option value="g">gramos</option>
@@ -194,23 +193,23 @@
 
   <div class="alert alert-err" id="m_err"></div>
 
-  <div class="card" id="m_result" style="display:none">
+  <div class="card" id="m_result">
     <div class="card-hdr">Proporciones</div>
-    <div class="mix-bar"><div class="mix-bar-c" id="m_bc" style="width:50%"></div><div class="mix-bar-h" id="m_bh" style="width:50%"></div></div>
+    <div class="mix-bar"><div class="mix-bar-c" id="m_bc"></div><div class="mix-bar-h" id="m_bh"></div></div>
     <div class="mix-labels"><span id="m_lc">Fría 50%</span><span id="m_lh">Caliente 50%</span></div>
-    <div style="margin-top:.6rem">
+    <div class="mix-results">
       <div class="irr">
         <div class="irr-left">
-          <div class="name" style="display:flex;align-items:center;gap:6px">
-            <span style="width:9px;height:9px;border-radius:50%;background:var(--blue);flex-shrink:0"></span>Agua fría
+          <div class="name irr-label">
+            <span class="dot dot-cold"></span>Agua fría
           </div>
         </div>
         <div class="irr-right"><div class="grams" id="m_rc">—</div><div class="sub" id="m_uc"></div></div>
       </div>
       <div class="irr">
         <div class="irr-left">
-          <div class="name" style="display:flex;align-items:center;gap:6px">
-            <span style="width:9px;height:9px;border-radius:50%;background:var(--accent);flex-shrink:0"></span>Agua caliente
+          <div class="name irr-label">
+            <span class="dot dot-hot"></span>Agua caliente
           </div>
         </div>
         <div class="irr-right"><div class="grams" id="m_rh">—</div><div class="sub" id="m_uh"></div></div>
@@ -261,32 +260,32 @@
       </div>
       <div class="field">
         <label class="lbl">Notas (opcional)</label>
-        <textarea id="r_notes" rows="2" style="resize:none;font-size:.85rem" placeholder="Proceso, tiempos, temperatura de fermentación…"></textarea>
+        <textarea id="r_notes" rows="2" placeholder="Proceso, tiempos, temperatura de fermentación…"></textarea>
       </div>
 
       <!-- HARINAS -->
       <div class="section-hdr">
-        <span>Harinas <span style="font-weight:400;opacity:.65">(deben sumar 100%)</span></span>
-        <div style="display:flex;align-items:center;gap:7px">
+        <span>Harinas <span class="section-hdr-hint">(deben sumar 100%)</span></span>
+        <div class="section-hdr-right">
           <span id="r_fsum" class="fs-pill fs-err">0 / 100%</span>
           <button class="btn btn-ghost btn-xs" onclick="rAddFlour()">+ Harina</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:4px">
+      <div class="col-hdr-2">
         <span class="chdr">Nombre</span><span class="chdr">%</span><span></span>
       </div>
       <div id="r_flour_list"></div>
 
       <!-- OTROS INGREDIENTES -->
       <div class="section-hdr">
-        <span>Otros ingredientes <span style="font-weight:400;opacity:.65">(% sobre harina)</span></span>
+        <span>Otros ingredientes <span class="section-hdr-hint">(% sobre harina)</span></span>
         <button class="btn btn-ghost btn-xs" onclick="rAddIng()">+ Ingrediente</button>
       </div>
-      <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:4px">
+      <div class="col-hdr-2">
         <span class="chdr">Nombre</span><span class="chdr">%</span><span></span>
       </div>
       <div id="r_ing_list"></div>
-      <div style="font-size:.65rem;color:var(--text3);margin-top:.35rem">Incluye el agua total de la receta (ej. "Agua" al 75%).</div>
+      <div class="field-hint">Incluye el agua total de la receta (ej. "Agua" al 75%).</div>
 
       <!-- ELABORACIONES PREVIAS -->
       <div class="section-hdr">
@@ -294,8 +293,8 @@
         <button class="btn btn-ghost btn-xs" onclick="rAddElab()">+ Añadir</button>
       </div>
       <div id="r_elab_list"></div>
-      <div id="r_elab_empty" style="font-size:.7rem;color:var(--text3);padding:.3rem 0">Sin elaboraciones previas.</div>
-      <div style="font-size:.65rem;color:var(--text3);margin-top:.5rem;background:var(--surface2);border-radius:var(--r);padding:.6rem .8rem;line-height:1.65">
+      <div id="r_elab_empty">Sin elaboraciones previas.</div>
+      <div class="elab-hint">
         Añade prefermentos, escaldados, tang zhong, soakers, etc. Cada elaboración tiene sus propios ingredientes: una o varias harinas, agua, y cualquier otro ingrediente libre. Sus cantidades se descuentan de la masa final.
       </div>
 

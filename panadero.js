@@ -101,7 +101,7 @@ function getHydration(r){
 
 function selectRecipe(id){ activeId=id; renderList(); showDetail(); }
 function showList(){ document.getElementById('v_list').style.display=''; document.getElementById('v_detail').style.display='none'; }
-function showDetail(){ document.getElementById('v_list').style.display='none'; document.getElementById('v_detail').style.display=''; calcDetail(); }
+function showDetail(){ document.getElementById('v_list').style.display='none'; document.getElementById('v_detail').style.display='block'; calcDetail(); }
 
 // ═══════════════════════════════════════
 // RECIPE CALC
