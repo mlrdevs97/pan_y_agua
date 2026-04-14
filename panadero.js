@@ -403,7 +403,7 @@ function rRenderFlours(){
     d.style.cssText='display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) 30px;gap:5px;align-items:center;margin-bottom:5px';
     d.innerHTML=
       `<input type="text" value="${esc(f.name)}" placeholder="Harina de fuerza, Sémola…" style="font-size:.85rem;padding:.45rem .65rem" oninput="rSetFlour(${f.id},'name',this.value)">` +
-      `<input type="number" value="${f.pct}" min="0" max="100" step="0.1" style="font-size:.85rem;padding:.45rem .65rem" oninput="rSetFlour(${f.id},'pct',this.value)">` +
+      `<input type="number" value="${f.pct}" min="0.1" max="100" step="0.1" style="font-size:.85rem;padding:.45rem .65rem" oninput="rSetFlour(${f.id},'pct',this.value)">` +
       `<button class="btn btn-icon btn-ghost" onclick="rDelFlour(${f.id})"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`;
     el.appendChild(d);
   });
@@ -534,6 +534,9 @@ function saveRecipe(){
   const name=document.getElementById('r_name').value.trim();
   if(!name){ alert('Ponle un nombre a la receta.'); return; }
   if(!rFlours.length){ alert('Añade al menos una harina.'); return; }
+  for(const f of rFlours){
+    if((parseFloat(f.pct)||0)<=0){ alert('La harina "'+( f.name||'sin nombre')+'" tiene un porcentaje de 0%. Todas las harinas deben tener un porcentaje mayor que 0.'); return; }
+  }
   const fsum=rFlours.reduce((s,f)=>s+(parseFloat(f.pct)||0),0);
   if(Math.abs(fsum-100)>0.01){ alert('Las harinas deben sumar exactamente 100% (ahora suman '+fsum.toFixed(1)+'%).'); return; }
 
