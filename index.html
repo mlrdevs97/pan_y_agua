@@ -183,8 +183,8 @@
   <div class="card">
     <div class="card-hdr">Cantidad total a obtener</div>
     <div class="irow">
-      <input type="number" id="m_tot" value="1" min="0.01" step="0.1" style="flex:2" oninput="mCalc()">
-      <select id="m_unit" onchange="mCalc()">
+      <input type="number" id="m_tot" value="1" min="0.01" step="0.1" style="flex:1;min-width:0" oninput="mCalc()">
+      <select id="m_unit" onchange="mCalc()" style="flex:0 0 auto;width:auto">
         <option value="l">litros</option>
         <option value="ml">mililitros</option>
         <option value="g">gramos</option>
