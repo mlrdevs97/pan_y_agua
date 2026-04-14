@@ -1,7 +1,6 @@
 // ═══════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════
-const CP_W = 4.18;
 const SUBS = {recetas:'Recetario', amasado:'T° del agua de amasado', mezcla:'Mezcla fría / caliente'};
 
 // ═══════════════════════════════════════
@@ -322,18 +321,16 @@ function renderResTab(i){
 
 function buildAmasadoData(r, fG, deductF, deductW, deductO, flourG, elabCalcs){
   const ings=[];
-  // Flours (final)
-  (r.flours||[]).forEach(f=>{ const m=(fG[f.id]||0)-(deductF[f.id]||0); ings.push({name:f.name,mass:+m.toFixed(1),temp:20,cp:1.80}); });
-  // Other ings except water (final)
+  // Flours
+  (r.flours||[]).forEach(f=>{ ings.push({name:f.name,temp:20}); });
+  // Other ings except water
   (r.ings||[]).forEach(ing=>{
     if(/^agua$/i.test((ing.name||'').trim())) return;
-    const tot=flourG*(parseFloat(ing.pct)||0)/100;
-    const ded=deductO[ing.id]||0;
-    ings.push({name:ing.name,mass:+(tot-ded).toFixed(1),temp:20,cp:1.00});
+    ings.push({name:ing.name,temp:20});
   });
-  // Elaborations as blocks
-  elabCalcs.forEach(e=>{ ings.push({name:e.name,mass:+e.total.toFixed(1),temp:18,cp:3.20}); });
-  // Water (final)
+  // Elaborations
+  elabCalcs.forEach(e=>{ ings.push({name:e.name,temp:18}); });
+  // Water mass (for reference)
   const wi=(r.ings||[]).find(i=>/^agua$/i.test((i.name||'').trim()));
   const wTot=wi?flourG*(parseFloat(wi.pct)||0)/100:0;
   const wFinal=Math.max(0,+(wTot-deductW).toFixed(1));
@@ -612,68 +609,54 @@ function deleteCurrent(){
 // ═══════════════════════════════════════
 // AMASADO
 // ═══════════════════════════════════════
-function aAddIng(n='',m=100,t=20,c=1.80){
-  aIngs.push({id:aIngId++,name:n,mass:m,temp:t,cp:c});
+function aAddIng(n='',t=20){
+  aIngs.push({id:aIngId++,name:n,temp:t});
   aRenderIngs(); aCalc();
 }
 function aDelIng(id){ aIngs=aIngs.filter(x=>x.id!==id); aRenderIngs(); aCalc(); }
 function aSet(id,f,v){
   const i=aIngs.find(x=>x.id===id); if(!i) return;
   i[f]=f==='name'?v:(parseFloat(v)||0);
-  if(f==='name') document.querySelectorAll('.cpname').forEach((el,j)=>{ if(aIngs[j]) el.textContent=aIngs[j].name||'—'; });
   aCalc();
 }
 function aRenderIngs(){
   const el=document.getElementById('a_ing_list'); el.innerHTML='';
   aIngs.forEach(ing=>{
     const d=document.createElement('div');
-    d.style.cssText='display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;align-items:center;margin-bottom:5px';
+    d.style.cssText='display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) 30px;gap:5px;align-items:center;margin-bottom:5px';
     d.innerHTML=
       `<input type="text" value="${esc(ing.name)}" placeholder="Ingrediente" style="font-size:.83rem;padding:.48rem .62rem" oninput="aSet(${ing.id},'name',this.value)">` +
-      `<input type="number" value="${ing.mass}" min="0" step="1" style="font-size:.83rem;padding:.48rem .62rem" oninput="aSet(${ing.id},'mass',this.value)">` +
       `<input type="number" value="${ing.temp}" step="0.5" style="font-size:.83rem;padding:.48rem .62rem" oninput="aSet(${ing.id},'temp',this.value)">` +
       `<button class="btn btn-icon btn-ghost" onclick="aDelIng(${ing.id})"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`;
     el.appendChild(d);
   });
-  // cp list
-  const cp=document.getElementById('a_cp_list'); cp.innerHTML='';
-  aIngs.forEach(ing=>{
-    const d=document.createElement('div');
-    d.style.cssText='display:flex;align-items:center;gap:8px;padding:.32rem 0;border-bottom:1px solid var(--border)';
-    d.innerHTML=
-      `<span class="cpname" style="flex:1;font-size:.8rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(ing.name||'—')}</span>` +
-      `<input type="number" value="${ing.cp}" min="0.01" step="0.01" style="width:78px;font-size:.83rem;padding:.38rem .55rem" oninput="aSet(${ing.id},'cp',this.value)">` +
-      `<span style="font-size:.65rem;color:var(--text3);white-space:nowrap">J/g·K</span>`;
-    cp.appendChild(d);
-  });
 }
 function aCalc(){
   const ttgt=parseFloat(document.getElementById('a_ttgt').value);
-  const wm=parseFloat(document.getElementById('a_wm').value);
   const err=document.getElementById('a_err'),warn=document.getElementById('a_warn'),res=document.getElementById('a_result');
   err.classList.remove('show'); warn.classList.remove('show'); res.style.display='none';
-  if(isNaN(ttgt)||isNaN(wm)||wm<=0){ err.textContent='Introduce una masa de agua válida.'; err.classList.add('show'); return; }
+  if(isNaN(ttgt)){ err.textContent='Introduce una temperatura objetivo válida.'; err.classList.add('show'); return; }
   if(!aIngs.length) return;
-  let Hs=0,Ms=0;
-  aIngs.forEach(i=>{ if(i.mass>=0&&i.cp>0){ Hs+=i.mass*i.cp*i.temp; Ms+=i.mass; } });
-  const Mt=Ms+wm, Tw=(ttgt*Mt*CP_W-Hs)/(wm*CP_W);
+  // Fórmula de n factores: T_masa = media aritmética de todos los ingredientes (incluido el agua)
+  // T_agua = T_objetivo × (n+1) − Σ(T_i)
+  const n=aIngs.length;
+  const sumT=aIngs.reduce((s,i)=>s+(parseFloat(i.temp)||0),0);
+  const Tw=ttgt*(n+1)-sumT;
   if(!isFinite(Tw)){ err.textContent='No se puede calcular con estos valores.'; err.classList.add('show'); return; }
   document.getElementById('a_tw').textContent=Tw.toFixed(1);
-  document.getElementById('a_mt').textContent=Mt.toFixed(0);
-  document.getElementById('a_hi').textContent=Hs.toFixed(0);
+  document.getElementById('a_nfactors').textContent=n+1;
   res.style.display='block';
-  if(Tw<0){ warn.textContent='⚠ Temperatura negativa ('+Tw.toFixed(1)+' °C). Ajusta los parámetros.'; warn.classList.add('show'); }
-  else if(Tw>100){ warn.textContent='⚠ Temperatura superior a 100 °C ('+Tw.toFixed(1)+' °C). Ajusta los parámetros.'; warn.classList.add('show'); }
+  if(Tw<0){ warn.textContent='⚠ Temperatura negativa ('+Tw.toFixed(1)+' °C). Ajusta las temperaturas de los ingredientes.'; warn.classList.add('show'); }
+  else if(Tw>100){ warn.textContent='⚠ Temperatura superior a 100 °C ('+Tw.toFixed(1)+' °C). Ajusta las temperaturas de los ingredientes.'; warn.classList.add('show'); }
   const btn=document.getElementById('a_to_mezcla');
   if(Tw>0&&Tw<100){ btn.style.display='inline-flex'; btn.textContent='Mezclar a '+Tw.toFixed(1)+' °C →'; pendingMezclaTemp=Tw; }
   else btn.style.display='none';
 }
 function aGoMezcla(){ switchTab('mezcla'); }
 document.getElementById('a_ttgt').addEventListener('input',aCalc);
-document.getElementById('a_wm').addEventListener('input',aCalc);
 // defaults
-aAddIng('Harina',500,20,1.80);
-aAddIng('Masa madre',100,18,3.20);
+aAddIng('Harina',20);
+aAddIng('Masa madre',18);
 
 // ═══════════════════════════════════════
 // MEZCLA

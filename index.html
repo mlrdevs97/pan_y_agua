@@ -117,13 +117,10 @@
   </div>
 
   <div class="card">
-    <div class="card-hdr-row">
-      <div class="card-hdr">Agua de amasado</div>
-      <span class="tag tag-water" style="font-size:.62rem">cp = 4.18</span>
-    </div>
+    <div class="card-hdr">Agua de amasado</div>
     <div class="field" style="margin:0">
       <label class="lbl">Masa (g)</label>
-      <input type="number" id="a_wm" value="300" min="1" step="1" oninput="aCalc()">
+      <input type="number" id="a_wm" value="300" min="1" step="1">
     </div>
   </div>
 
@@ -135,22 +132,12 @@
         Añadir
       </button>
     </div>
-    <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:5px">
-      <span class="chdr">Nombre</span><span class="chdr">Masa (g)</span><span class="chdr">T (°C)</span><span></span>
+    <div style="display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:5px">
+      <span class="chdr">Nombre</span><span class="chdr">T (°C)</span><span></span>
     </div>
     <div id="a_ing_list"></div>
   </div>
 
-  <div class="card">
-    <div class="card-hdr">Calor específico (cp)</div>
-    <div id="a_cp_list"></div>
-    <div class="cp-ref">
-      <strong>Referencia J/g·K:</strong><br>
-      Harina 1.80 · Sémola 1.75 · Sal 0.88 · Azúcar 1.24<br>
-      Mantequilla 2.09 · Huevo 3.18 · Leche 3.93<br>
-      Masa madre 3.20 · Escaldado ~2.5 · Agua 4.18
-    </div>
-  </div>
 
   <div class="alert alert-err" id="a_err"></div>
   <div class="alert alert-warn" id="a_warn"></div>
@@ -162,9 +149,8 @@
       <div class="rval" id="a_tw">—</div>
       <div class="runit">°C</div>
     </div>
-    <div class="stat-grid">
-      <div class="stat"><div class="stat-lbl">Masa total</div><div class="stat-val" id="a_mt">—</div><div class="stat-unit">g</div></div>
-      <div class="stat"><div class="stat-lbl">Σ m·cp·T</div><div class="stat-val" id="a_hi">—</div><div class="stat-unit">J</div></div>
+    <div class="stat-grid" style="grid-template-columns:1fr">
+      <div class="stat"><div class="stat-lbl">Factores de temperatura</div><div class="stat-val" id="a_nfactors">—</div></div>
     </div>
     <div style="text-align:center;margin-top:.75rem">
       <button class="btn btn-sm" id="a_to_mezcla" style="display:none" onclick="aGoMezcla()">
