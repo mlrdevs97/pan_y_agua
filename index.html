@@ -120,7 +120,7 @@
     <div class="card-hdr">Agua de amasado</div>
     <div class="field" style="margin:0">
       <label class="lbl">Masa (g)</label>
-      <input type="number" id="a_wm" value="300" min="1" step="1">
+      <input type="number" id="a_wm" value="300" min="1" step="1" oninput="aCalc()">
     </div>
   </div>
 
@@ -132,8 +132,8 @@
         Añadir
       </button>
     </div>
-    <div style="display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:5px">
-      <span class="chdr">Nombre</span><span class="chdr">T (°C)</span><span></span>
+    <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;margin-bottom:5px">
+      <span class="chdr">Nombre</span><span class="chdr">Masa (g)</span><span class="chdr">T (°C)</span><span></span>
     </div>
     <div id="a_ing_list"></div>
   </div>
@@ -148,9 +148,6 @@
       <div class="rlbl">T agua de amasado</div>
       <div class="rval" id="a_tw">—</div>
       <div class="runit">°C</div>
-    </div>
-    <div class="stat-grid" style="grid-template-columns:1fr">
-      <div class="stat"><div class="stat-lbl">Factores de temperatura</div><div class="stat-val" id="a_nfactors">—</div></div>
     </div>
     <div style="text-align:center;margin-top:.75rem">
       <button class="btn btn-sm" id="a_to_mezcla" style="display:none" onclick="aGoMezcla()">

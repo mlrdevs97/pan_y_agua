@@ -321,16 +321,18 @@ function renderResTab(i){
 
 function buildAmasadoData(r, fG, deductF, deductW, deductO, flourG, elabCalcs){
   const ings=[];
-  // Flours
-  (r.flours||[]).forEach(f=>{ ings.push({name:f.name,temp:20}); });
+  // Flours (masa final tras deducciones)
+  (r.flours||[]).forEach(f=>{ const m=(fG[f.id]||0)-(deductF[f.id]||0); ings.push({name:f.name,mass:+m.toFixed(1),temp:20}); });
   // Other ings except water
   (r.ings||[]).forEach(ing=>{
     if(/^agua$/i.test((ing.name||'').trim())) return;
-    ings.push({name:ing.name,temp:20});
+    const tot=flourG*(parseFloat(ing.pct)||0)/100;
+    const ded=deductO[ing.id]||0;
+    ings.push({name:ing.name,mass:+(tot-ded).toFixed(1),temp:20});
   });
   // Elaborations
-  elabCalcs.forEach(e=>{ ings.push({name:e.name,temp:18}); });
-  // Water mass (for reference)
+  elabCalcs.forEach(e=>{ ings.push({name:e.name,mass:+e.total.toFixed(1),temp:18}); });
+  // Water mass
   const wi=(r.ings||[]).find(i=>/^agua$/i.test((i.name||'').trim()));
   const wTot=wi?flourG*(parseFloat(wi.pct)||0)/100:0;
   const wFinal=Math.max(0,+(wTot-deductW).toFixed(1));
@@ -609,8 +611,8 @@ function deleteCurrent(){
 // ═══════════════════════════════════════
 // AMASADO
 // ═══════════════════════════════════════
-function aAddIng(n='',t=20){
-  aIngs.push({id:aIngId++,name:n,temp:t});
+function aAddIng(n='',m=100,t=20){
+  aIngs.push({id:aIngId++,name:n,mass:m,temp:t});
   aRenderIngs(); aCalc();
 }
 function aDelIng(id){ aIngs=aIngs.filter(x=>x.id!==id); aRenderIngs(); aCalc(); }
@@ -623,9 +625,10 @@ function aRenderIngs(){
   const el=document.getElementById('a_ing_list'); el.innerHTML='';
   aIngs.forEach(ing=>{
     const d=document.createElement('div');
-    d.style.cssText='display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr) 30px;gap:5px;align-items:center;margin-bottom:5px';
+    d.style.cssText='display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) 30px;gap:5px;align-items:center;margin-bottom:5px';
     d.innerHTML=
       `<input type="text" value="${esc(ing.name)}" placeholder="Ingrediente" style="font-size:.83rem;padding:.48rem .62rem" oninput="aSet(${ing.id},'name',this.value)">` +
+      `<input type="number" value="${ing.mass}" min="0" step="1" style="font-size:.83rem;padding:.48rem .62rem" oninput="aSet(${ing.id},'mass',this.value)">` +
       `<input type="number" value="${ing.temp}" step="0.5" style="font-size:.83rem;padding:.48rem .62rem" oninput="aSet(${ing.id},'temp',this.value)">` +
       `<button class="btn btn-icon btn-ghost" onclick="aDelIng(${ing.id})"><svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>`;
     el.appendChild(d);
@@ -633,18 +636,18 @@ function aRenderIngs(){
 }
 function aCalc(){
   const ttgt=parseFloat(document.getElementById('a_ttgt').value);
+  const wm=parseFloat(document.getElementById('a_wm').value);
   const err=document.getElementById('a_err'),warn=document.getElementById('a_warn'),res=document.getElementById('a_result');
   err.classList.remove('show'); warn.classList.remove('show'); res.style.display='none';
   if(isNaN(ttgt)){ err.textContent='Introduce una temperatura objetivo válida.'; err.classList.add('show'); return; }
+  if(isNaN(wm)||wm<=0){ err.textContent='Introduce la masa de agua de amasado.'; err.classList.add('show'); return; }
   if(!aIngs.length) return;
-  // Fórmula de n factores: T_masa = media aritmética de todos los ingredientes (incluido el agua)
-  // T_agua = T_objetivo × (n+1) − Σ(T_i)
-  const n=aIngs.length;
-  const sumT=aIngs.reduce((s,i)=>s+(parseFloat(i.temp)||0),0);
-  const Tw=ttgt*(n+1)-sumT;
+  // Media ponderada por masa: T_agua = (T_obj × M_total − Σ(mᵢ × Tᵢ)) / m_agua
+  const sumMT=aIngs.reduce((s,i)=>s+(parseFloat(i.mass)||0)*(parseFloat(i.temp)||0),0);
+  const sumM=aIngs.reduce((s,i)=>s+(parseFloat(i.mass)||0),0);
+  const Tw=(ttgt*(sumM+wm)-sumMT)/wm;
   if(!isFinite(Tw)){ err.textContent='No se puede calcular con estos valores.'; err.classList.add('show'); return; }
   document.getElementById('a_tw').textContent=Tw.toFixed(1);
-  document.getElementById('a_nfactors').textContent=n+1;
   res.style.display='block';
   if(Tw<0){ warn.textContent='⚠ Temperatura negativa ('+Tw.toFixed(1)+' °C). Ajusta las temperaturas de los ingredientes.'; warn.classList.add('show'); }
   else if(Tw>100){ warn.textContent='⚠ Temperatura superior a 100 °C ('+Tw.toFixed(1)+' °C). Ajusta las temperaturas de los ingredientes.'; warn.classList.add('show'); }
@@ -654,9 +657,10 @@ function aCalc(){
 }
 function aGoMezcla(){ switchTab('mezcla'); }
 document.getElementById('a_ttgt').addEventListener('input',aCalc);
+document.getElementById('a_wm').addEventListener('input',aCalc);
 // defaults
-aAddIng('Harina',20);
-aAddIng('Masa madre',18);
+aAddIng('Harina',500,20);
+aAddIng('Masa madre',100,18);
 
 // ═══════════════════════════════════════
 // MEZCLA
