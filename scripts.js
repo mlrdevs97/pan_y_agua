@@ -18,6 +18,8 @@ let pendingAmasado=null;
 let resTab=0;
 // last calc result (for tab switching)
 let lastCalc=null;
+// hydration steps panel state
+let hidOpen=false;
 
 // ═══════════════════════════════════════
 // STORAGE
@@ -241,7 +243,7 @@ function setResTab(i){
 
 function renderResTab(i){
   if(!lastCalc) return;
-  const {elabCalcs,finalRows,summaryRows,totalMass}=lastCalc;
+  const {elabCalcs,finalRows,summaryRows,totalMass,flourG}=lastCalc;
   const body=document.getElementById('d_res_body');
 
   if(i===0){
@@ -303,19 +305,49 @@ function renderResTab(i){
         <div class="irr-right"><div class="grams">${elab.total.toFixed(1)} g</div></div>
       </div>`;
     });
-    // Water rows last (with deductions)
+    // Water rows last (with deductions) + hydration-steps expandable
     waterRows.forEach(fr=>{
-      html+=`<div class="irr">
-        <div class="irr-left"><div class="name">${esc(fr.name)} <span class="tag tag-water" style="font-size:.58rem">agua</span></div><div class="pct">${esc(fr.pct)}</div></div>
-        <div class="irr-right">
-          <div class="grams">${fr.final.toFixed(1)} g</div>
-          ${fr.ded>0?`<div class="sub">Total: ${fr.total.toFixed(1)} g<br>Elab.: −${fr.ded.toFixed(1)} g</div>`:''}
+      const canSplit=flourG>0&&fr.final>0.1;
+      const finalHyd=canSplit?fr.final/flourG*100:0;
+      const slMin=Math.max(5,finalHyd*0.4);
+      const slDef=Math.min(finalHyd,Math.max(slMin,finalHyd*0.8));
+      if(canSplit){
+        html+=`<div class="irr irr-expandable${hidOpen?' irr-expanded':''}" onclick="hidToggle()">
+          <div class="irr-left">
+            <div class="name">${esc(fr.name)} <span class="tag tag-water" style="font-size:.58rem">agua</span></div>
+            <div class="pct">${esc(fr.pct)}</div>
+          </div>
+          <div class="irr-right">
+            <div>
+              <div class="grams">${fr.final.toFixed(1)} g</div>
+              ${fr.ded>0?`<div class="sub">Total: ${fr.total.toFixed(1)} g<br>Elab.: −${fr.ded.toFixed(1)} g</div>`:''}
+            </div>
+            <div class="hid-chevron" id="hid_toggle_icon">${hidOpen?'▴':'▾'}</div>
+          </div>
         </div>
-      </div>`;
+        <div class="hid-panel" id="hid_panel"${hidOpen?'':' style="display:none"'}>
+          <div class="hid-sl-header">
+            <span class="lbl">Hidratación 1er paso</span>
+            <span id="hid_sl_disp" class="hid-sl-disp">${slDef.toFixed(1)}%</span>
+          </div>
+          <input type="range" id="hid_sl" min="${slMin.toFixed(1)}" max="${finalHyd.toFixed(1)}" value="${slDef.toFixed(1)}" step="0.5" oninput="hidUpdate();event.stopPropagation()">
+          <div class="range-row"><span>${slMin.toFixed(0)}%</span><span>${finalHyd.toFixed(1)}%</span></div>
+          <div id="hid_rows" class="hid-rows"></div>
+        </div>`;
+      } else {
+        html+=`<div class="irr">
+          <div class="irr-left"><div class="name">${esc(fr.name)} <span class="tag tag-water" style="font-size:.58rem">agua</span></div><div class="pct">${esc(fr.pct)}</div></div>
+          <div class="irr-right">
+            <div class="grams">${fr.final.toFixed(1)} g</div>
+            ${fr.ded>0?`<div class="sub">Total: ${fr.total.toFixed(1)} g<br>Elab.: −${fr.ded.toFixed(1)} g</div>`:''}
+          </div>
+        </div>`;
+      }
     });
     const masaFinalTotal=elabCalcs.reduce((s,e)=>s+e.total,0)+finalRows.reduce((s,r)=>s+r.final,0);
     html+=`</div><div class="total-bar"><span class="total-bar-lbl">Masa total</span><span class="total-bar-val">${masaFinalTotal.toFixed(0)} g</span></div>`;
     body.innerHTML=html;
+    if(hidOpen) hidUpdate();
   }
 }
 
@@ -347,6 +379,75 @@ function goToAmasado(){
   aRenderIngs(); aCalc();
   const b=document.getElementById('a_banner');
   b.textContent='✓ Ingredientes cargados desde: '+d.recipeName;
+  b.classList.add('show');
+  switchTab('amasado');
+}
+
+// ═══════════════════════════════════════
+// HIDRATACIÓN POR PASOS
+// ═══════════════════════════════════════
+function hidToggle(){
+  hidOpen=!hidOpen;
+  const panel=document.getElementById('hid_panel');
+  const icon=document.getElementById('hid_toggle_icon');
+  const row=panel&&panel.previousElementSibling;
+  if(panel) panel.style.display=hidOpen?'block':'none';
+  if(icon) icon.textContent=hidOpen?'▴':'▾';
+  if(row) row.classList.toggle('irr-expanded',hidOpen);
+  if(hidOpen) hidUpdate();
+}
+
+function hidUpdate(){
+  if(!lastCalc) return;
+  const {flourG,amasadoData}=lastCalc;
+  const finalWater=amasadoData?amasadoData.waterMass:0;
+  const sl=document.getElementById('hid_sl');
+  if(!sl) return;
+  const pct1=parseFloat(sl.value);
+  const water1=flourG*pct1/100;
+  const waterRem=Math.max(0,finalWater-water1);
+  const pctRem=flourG>0?waterRem/flourG*100:0;
+  // slider fill
+  const mn=+sl.min,mx=+sl.max;
+  sl.style.setProperty('--pct',mx>mn?((pct1-mn)/(mx-mn)*100).toFixed(1)+'%':'0%');
+  document.getElementById('hid_sl_disp').textContent=pct1.toFixed(1)+'%';
+  const hasRem=waterRem>0.1;
+  document.getElementById('hid_rows').innerHTML=`
+    <div class="hid-row">
+      <div class="hid-row-info">
+        <div class="hid-row-label">Paso 1</div>
+        <div class="hid-row-sub">${pct1.toFixed(1)}% de hidratación</div>
+      </div>
+      <span class="hid-row-grams">${water1.toFixed(0)} g</span>
+    </div>
+    <div class="hid-row hid-row-rem${hasRem?'':' hid-row-zero'}">
+      <div class="hid-row-info">
+        <div class="hid-row-label">Agua restante</div>
+        <div class="hid-row-sub">+${pctRem.toFixed(1)}% → total ${(pct1+pctRem).toFixed(1)}%</div>
+      </div>
+      <span class="hid-row-grams">${waterRem.toFixed(0)} g</span>
+    </div>`;
+}
+
+function hidGoAmasado(step){
+  if(!lastCalc) return;
+  const {flourG,amasadoData}=lastCalc;
+  const finalWater=amasadoData.waterMass;
+  const pct1=parseFloat(document.getElementById('hid_sl').value);
+  const water1=flourG*pct1/100;
+  const waterRem=Math.max(0,finalWater-water1);
+  const water=step===1?water1:waterRem;
+  if(water<0.1) return;
+  const pctRem=flourG>0?waterRem/flourG*100:0;
+  const label=step===1
+    ?'Paso 1 ('+pct1.toFixed(0)+'% hid.)'
+    :'Agua restante (+'+pctRem.toFixed(0)+'% → total '+( pct1+pctRem).toFixed(0)+'%)';
+  const d=amasadoData;
+  aIngs=d.ings.map(i=>({id:aIngId++,...i}));
+  document.getElementById('a_wm').value=water.toFixed(0);
+  aRenderIngs(); aCalc();
+  const b=document.getElementById('a_banner');
+  b.textContent='✓ '+d.recipeName+' · '+label;
   b.classList.add('show');
   switchTab('amasado');
 }

@@ -229,3 +229,24 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .field-hint{font-size:.65rem;color:var(--text3);margin-top:.35rem}
 #r_elab_empty{font-size:.7rem;color:var(--text3);padding:.3rem 0}
 .elab-hint{font-size:.65rem;color:var(--text3);margin-top:.5rem;background:var(--surface2);border-radius:var(--r);padding:.6rem .8rem;line-height:1.65}
+
+/* ── HIDRATACIÓN POR PASOS ── */
+.irr-expandable{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.irr-expandable:hover{background:var(--surface2);margin:0 -.3rem;padding-left:.3rem;padding-right:.3rem;border-radius:var(--r)}
+.irr-expanded{color:var(--accent)}
+.irr-expanded .grams{color:var(--accent)}
+.irr-expandable .irr-right{display:flex;align-items:center;gap:10px}
+.hid-chevron{font-size:.85rem;color:var(--accent);flex-shrink:0;line-height:1}
+.hid-panel{background:var(--surface2);border-radius:var(--r);padding:.75rem .85rem .55rem;margin:.15rem 0 .1rem}
+.hid-sl-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
+.hid-sl-disp{font-family:'Lora',serif;font-size:1.5rem;font-weight:600;color:var(--accent)}
+.hid-rows{margin-top:.6rem}
+.hid-row{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border2);gap:8px}
+.hid-row:last-child{border-bottom:none}
+.hid-row-info{display:flex;flex-direction:column;gap:2px}
+.hid-row-label{font-size:.84rem;font-weight:600;color:var(--text)}
+.hid-row-sub{font-size:.65rem;color:var(--text3)}
+.hid-row-grams{font-family:'Lora',serif;font-size:1.1rem;font-weight:600;color:var(--text);flex-shrink:0}
+.hid-row-rem .hid-row-label{color:var(--blue)}
+.hid-row-rem .hid-row-grams{color:var(--blue)}
+.hid-row-zero{opacity:.45}
