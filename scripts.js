@@ -103,7 +103,16 @@ function getHydration(r){
 
 function selectRecipe(id){ activeId=id; renderList(); showDetail(); }
 function showList(){ document.getElementById('v_list').style.display=''; document.getElementById('v_detail').style.display='none'; }
-function showDetail(){ document.getElementById('v_list').style.display='none'; document.getElementById('v_detail').style.display='block'; calcDetail(); }
+function showDetail(){
+  document.getElementById('v_list').style.display='none';
+  document.getElementById('v_detail').style.display='block';
+  const r=recipes.find(x=>x.id===activeId);
+  if(r){
+    if(r.weight!=null) document.getElementById('d_weight').value=r.weight;
+    if(r.pieces!=null) document.getElementById('d_pieces').value=r.pieces;
+  }
+  calcDetail();
+}
 
 // ═══════════════════════════════════════
 // RECIPE CALC
@@ -220,6 +229,8 @@ function calcDetail(){
   lastCalc={elabCalcs, finalRows, summaryRows, totalMass, flourG, deductW, r,
     amasadoData:buildAmasadoData(r, fG, deductF, deductW, deductO, flourG, elabCalcs)};
 
+  // Persist production inputs per recipe
+  if(r.weight!==unitW || r.pieces!==pieces){ r.weight=unitW; r.pieces=pieces; save(); }
   resWrap.style.display='block';
   buildResTabs(elabCalcs);
   renderResTab(resTab);
@@ -310,7 +321,9 @@ function renderResTab(i){
       const canSplit=flourG>0&&fr.final>0.1;
       const finalHyd=canSplit?fr.final/flourG*100:0;
       const slMin=Math.max(5,finalHyd*0.4);
-      const slDef=Math.min(finalHyd,Math.max(slMin,finalHyd*0.8));
+      const r=lastCalc.r;
+      const savedPct=r.hidPct!=null?Math.min(finalHyd,Math.max(slMin,r.hidPct)):null;
+      const slDef=savedPct!=null?savedPct:Math.min(finalHyd,Math.max(slMin,finalHyd*0.8));
       if(canSplit){
         html+=`<div class="irr irr-expandable${hidOpen?' irr-expanded':''}" onclick="hidToggle()">
           <div class="irr-left">
@@ -411,6 +424,7 @@ function hidUpdate(){
   const mn=+sl.min,mx=+sl.max;
   sl.style.setProperty('--pct',mx>mn?((pct1-mn)/(mx-mn)*100).toFixed(1)+'%':'0%');
   document.getElementById('hid_sl_disp').textContent=pct1.toFixed(1)+'%';
+  if(lastCalc&&lastCalc.r&&lastCalc.r.hidPct!==pct1){ lastCalc.r.hidPct=pct1; save(); }
   const hasRem=waterRem>0.1;
   document.getElementById('hid_rows').innerHTML=`
     <div class="hid-row">
