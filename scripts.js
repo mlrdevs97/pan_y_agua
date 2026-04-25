@@ -655,7 +655,24 @@ function aCalc(){
   if(Tw>0&&Tw<100){ btn.style.display='inline-flex'; btn.textContent='Mezclar a '+Tw.toFixed(1)+' °C →'; pendingMezclaTemp=Tw; }
   else btn.style.display='none';
 }
-function aGoMezcla(){ switchTab('mezcla'); }
+function aGoMezcla(){
+  // Prerellenar cantidad total con el agua de amasado (en gramos)
+  const wm=parseFloat(document.getElementById('a_wm').value);
+  if(!isNaN(wm)&&wm>0){
+    document.getElementById('m_tot').value=wm.toFixed(0);
+    document.getElementById('m_unit').value='g';
+  }
+  // Preseleccionar la temperatura calculada en el slider
+  if(isFinite(pendingMezclaTemp)){
+    mRangeUpdate();
+    const sl=document.getElementById('m_sl');
+    const clamped=Math.max(+sl.min,Math.min(+sl.max,pendingMezclaTemp));
+    sl.value=clamped.toFixed(1);
+    mSyncSlider();
+  }
+  mCalc();
+  switchTab('mezcla');
+}
 document.getElementById('a_ttgt').addEventListener('input',aCalc);
 document.getElementById('a_wm').addEventListener('input',aCalc);
 // defaults
@@ -684,7 +701,7 @@ function mSyncSlider(){
   document.getElementById('m_tdisp').textContent=v.toFixed(1)+'°C';
 }
 function mFmt(v,unit){
-  if(unit==='g') return v.toFixed(0)+' g';
+  if(unit==='g') return (v*1000).toFixed(0)+' g';
   if(unit==='ml') return (v*1000).toFixed(0)+' mL';
   return v<1?v.toFixed(3)+' L':v.toFixed(2)+' L';
 }
