@@ -166,12 +166,11 @@ function calcDetail(){
     (elab.ings||[]).forEach(ei=>{
       let grams=0;
       if(ei.type==='flour'){
-        // pct of that specific flour's total grams
-        const base=fG[ei.flourId]||0;
-        grams=base*(parseFloat(ei.pct)||0)/100;
+        // pct of TOTAL recipe flour (not of the individual flour)
+        grams=flourG*(parseFloat(ei.pct)||0)/100;
         deductF[ei.flourId]=(deductF[ei.flourId]||0)+grams;
         const fname=(r.flours||[]).find(f=>f.id===ei.flourId)?.name||'Harina';
-        elabIngs.push({name:fname, grams, type:'flour', pctDesc:(parseFloat(ei.pct)||0).toFixed(1)+'% de '+fname});
+        elabIngs.push({name:fname, grams, type:'flour', pctDesc:(parseFloat(ei.pct)||0).toFixed(1)+'% s/harina total'});
       } else if(ei.type==='water'){
         // pct of THIS elaboration's own flour (sum of flour-type ings already pushed)
         const elabFlourG=elabIngs.filter(x=>x.type==='flour').reduce((s,x)=>s+x.grams,0);
@@ -566,7 +565,7 @@ function rDelElabIng(elabId,eiId){
 function rSetElabIng(elabId,eiId,field,val){
   const e=rElabs.find(x=>x.id===elabId); if(!e) return;
   const ei=e.ings.find(x=>x.id===eiId); if(!ei) return;
-  if(field==='flourId'||field==='ingId') ei[field]=parseInt(val);
+  if(field==='flourId'||field==='ingId'){ ei[field]=parseInt(val); rRenderElabs(); }
   else if(field==='name') ei.name=val;
   else ei[field]=parseFloat(val)||0;
 }
@@ -595,12 +594,14 @@ function rRenderElabs(){
     let ingRows='';
     (elab.ings||[]).forEach(ei=>{
       if(ei.type==='flour'){
+        const flourDef=rFlours.find(f=>f.id===ei.flourId);
+        const maxPct=flourDef?parseFloat(flourDef.pct)||0:100;
         ingRows+=`<div class="eeb-ing-row">
           <select style="font-size:.82rem;padding:.4rem .6rem;padding-right:1.8rem" onchange="rSetElabIng(${elab.id},${ei.id},'flourId',this.value)">
             ${rFlours.map(f=>`<option value="${f.id}"${f.id===ei.flourId?' selected':''}>${esc(f.name||'Harina')}</option>`).join('')}
           </select>
-          <input type="number" value="${ei.pct}" min="0" max="100" step="0.1" placeholder="% de esa harina" oninput="rSetElabIng(${elab.id},${ei.id},'pct',this.value)">
-          <span style="font-size:.68rem;color:var(--text3);display:flex;align-items:center;padding:0 3px">% de esa harina</span>
+          <input type="number" value="${ei.pct}" min="0" max="${maxPct}" step="0.1" placeholder="% s/harina total" oninput="rSetElabIng(${elab.id},${ei.id},'pct',this.value)">
+          <span style="font-size:.68rem;color:var(--text3);display:flex;align-items:center;padding:0 3px">% total (máx.&nbsp;${maxPct}%)</span>
           <button class="btn btn-icon btn-ghost" onclick="rDelElabIng(${elab.id},${ei.id})"><svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
         </div>`;
       } else if(ei.type==='water'){
@@ -660,18 +661,20 @@ function saveRecipe(){
     if(!(elab.ings||[]).length){ alert('La elaboración "'+elab.name+'" no tiene ingredientes. Añade al menos uno o elimínala.'); return; }
   }
 
-  // Fix 3+4: validate elaboration flour usage
-  // Accumulate % used per flourId across all elaborations
-  const flourUsed={}; // flourId -> total pct used
+  // Validate elaboration flour usage:
+  // each flour's accumulated pct across elabs cannot exceed that flour's own pct in the recipe
+  const flourUsed={}; // flourId -> total pct used across all elabs
   for(const elab of rElabs){
     for(const ei of (elab.ings||[])){
       if(ei.type==='flour'){
         const pct=parseFloat(ei.pct)||0;
         if(pct<=0){ alert('La harina de "'+elab.name+'" no puede ser 0%. Corrige el porcentaje.'); return; }
         flourUsed[ei.flourId]=(flourUsed[ei.flourId]||0)+pct;
-        if(flourUsed[ei.flourId]>100+0.01){
-          const fname=rFlours.find(f=>f.id===ei.flourId)?.name||'harina';
-          alert('El porcentaje total de "'+fname+'" usado en elaboraciones supera el 100% ('+flourUsed[ei.flourId].toFixed(1)+'%). Reduce los porcentajes.'); return;
+        const flourDef=rFlours.find(f=>f.id===ei.flourId);
+        const flourMax=flourDef?parseFloat(flourDef.pct)||0:0;
+        if(flourUsed[ei.flourId]>flourMax+0.01){
+          const fname=flourDef?.name||'harina';
+          alert('"'+fname+'" representa el '+flourMax.toFixed(1)+'% del total de harina en la receta, pero las elaboraciones previas le asignan en total el '+flourUsed[ei.flourId].toFixed(1)+'%. Reduce los porcentajes en las elaboraciones.'); return;
         }
       }
     }
