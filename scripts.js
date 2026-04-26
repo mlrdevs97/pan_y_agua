@@ -225,7 +225,8 @@ function calcDetail(){
   });
 
   // Cache for tab switching
-  lastCalc={elabCalcs, finalRows, summaryRows, totalMass, flourG, deductW, r,
+  const totalElabFlour=Object.values(deductF).reduce((s,v)=>s+v,0);
+  lastCalc={elabCalcs, finalRows, summaryRows, totalMass, flourG, deductW, totalElabFlour, r,
     amasadoData:buildAmasadoData(r, fG, deductF, deductW, deductO, flourG, elabCalcs)};
 
   // Persist production inputs per recipe
@@ -253,7 +254,7 @@ function setResTab(i){
 
 function renderResTab(i){
   if(!lastCalc) return;
-  const {elabCalcs,finalRows,summaryRows,totalMass,flourG}=lastCalc;
+  const {elabCalcs,finalRows,summaryRows,totalMass,flourG,deductW,totalElabFlour}=lastCalc;
   const body=document.getElementById('d_res_body');
 
   if(i===0){
@@ -321,10 +322,15 @@ function renderResTab(i){
     });
     // Water rows last (with deductions) + hydration-steps expandable
     waterRows.forEach(fr=>{
-      const canSplit=flourG>0&&fr.final>0.1;
-      const finalHyd=canSplit?fr.final/flourG*100:0;
-      const slMin=Math.max(5,finalHyd*0.4);
       const r=lastCalc.r;
+      const finalMasaFlour=Math.max(0,flourG-totalElabFlour);
+      const hasElabsInHid=(r.elabs||[]).length>0&&(totalElabFlour>0||deductW>0);
+      const inclElabs=hasElabsInHid&&(r.hidInclElabs||false);
+      const flourBase=inclElabs?flourG:Math.max(0.01,finalMasaFlour);
+      const waterBaseForHyd=inclElabs?(fr.final+deductW):fr.final;
+      const canSplit=flourBase>0.01&&fr.final>0.1;
+      const finalHyd=canSplit?waterBaseForHyd/flourBase*100:0;
+      const slMin=inclElabs?Math.max(5,deductW/flourBase*100):Math.max(5,finalHyd*0.4);
       const savedPct=r.hidPct!=null?Math.min(finalHyd,Math.max(slMin,r.hidPct)):null;
       const slDef=savedPct!=null?savedPct:Math.min(finalHyd,Math.max(slMin,finalHyd*0.8));
       if(canSplit){
@@ -342,6 +348,10 @@ function renderResTab(i){
           </div>
         </div>
         <div class="hid-panel" id="hid_panel"${hidOpen?'':' style="display:none"'}>
+          ${hasElabsInHid?`<div class="hid-mode-row">
+            <button class="hid-mode-btn${!inclElabs?' hid-mode-active':''}" onclick="hidSetMode(false);event.stopPropagation()">Masa final</button>
+            <button class="hid-mode-btn${inclElabs?' hid-mode-active':''}" onclick="hidSetMode(true);event.stopPropagation()">+ Elaboraciones</button>
+          </div>`:''}
           <div class="hid-sl-header">
             <span class="lbl">Hidratación 1er paso</span>
             <span id="hid_sl_disp" class="hid-sl-disp">${slDef.toFixed(1)}%</span>
@@ -415,50 +425,106 @@ function hidToggle(){
 
 function hidUpdate(){
   if(!lastCalc) return;
-  const {flourG,amasadoData}=lastCalc;
+  const {flourG,deductW,totalElabFlour,amasadoData,r}=lastCalc;
   const finalWater=amasadoData?amasadoData.waterMass:0;
+  const hasElabs=(r.elabs||[]).length>0&&(totalElabFlour>0||deductW>0);
+  const inclElabs=hasElabs&&(r.hidInclElabs||false);
+  const flourBase=inclElabs?flourG:Math.max(0.01,flourG-totalElabFlour);
   const sl=document.getElementById('hid_sl');
   if(!sl) return;
   const pct1=parseFloat(sl.value);
-  const water1=flourG*pct1/100;
-  const waterRem=Math.max(0,finalWater-water1);
-  const pctRem=flourG>0?waterRem/flourG*100:0;
   // slider fill
   const mn=+sl.min,mx=+sl.max;
   sl.style.setProperty('--pct',mx>mn?((pct1-mn)/(mx-mn)*100).toFixed(1)+'%':'0%');
   document.getElementById('hid_sl_disp').textContent=pct1.toFixed(1)+'%';
-  if(lastCalc&&lastCalc.r&&lastCalc.r.hidPct!==pct1){ lastCalc.r.hidPct=pct1; save(); }
+  if(r&&r.hidPct!==pct1){ r.hidPct=pct1; save(); }
+  let water1,waterRem,pctRem,sub1,sub2;
+  if(inclElabs){
+    const water1Total=flourBase*pct1/100;
+    water1=Math.max(0,water1Total-deductW);
+    waterRem=Math.max(0,finalWater-water1);
+    pctRem=flourBase>0?waterRem/flourBase*100:0;
+    sub1=`${pct1.toFixed(1)}% de hid. total (incl. elaboraciones)`;
+    sub2=`+${pctRem.toFixed(1)}% → total ${(pct1+pctRem).toFixed(1)}%`;
+  } else {
+    water1=flourBase*pct1/100;
+    waterRem=Math.max(0,finalWater-water1);
+    pctRem=flourBase>0?waterRem/flourBase*100:0;
+    sub1=`${pct1.toFixed(1)}% de hid. (s/harina masa final)`;
+    sub2=`+${pctRem.toFixed(1)}% → total ${(pct1+pctRem).toFixed(1)}% (s/harina masa final)`;
+  }
   const hasRem=waterRem>0.1;
   document.getElementById('hid_rows').innerHTML=`
     <div class="hid-row">
       <div class="hid-row-info">
         <div class="hid-row-label">Paso 1</div>
-        <div class="hid-row-sub">${pct1.toFixed(1)}% de hidratación</div>
+        <div class="hid-row-sub">${sub1}</div>
       </div>
       <span class="hid-row-grams">${water1.toFixed(0)} g</span>
     </div>
     <div class="hid-row hid-row-rem${hasRem?'':' hid-row-zero'}">
       <div class="hid-row-info">
         <div class="hid-row-label">Agua restante</div>
-        <div class="hid-row-sub">+${pctRem.toFixed(1)}% → total ${(pct1+pctRem).toFixed(1)}%</div>
+        <div class="hid-row-sub">${sub2}</div>
       </div>
       <span class="hid-row-grams">${waterRem.toFixed(0)} g</span>
     </div>`;
 }
 
+function hidSetMode(inclElabs){
+  if(!lastCalc) return;
+  const {flourG,deductW,totalElabFlour,amasadoData,r}=lastCalc;
+  const finalWater=amasadoData?amasadoData.waterMass:0;
+  if((r.hidInclElabs||false)===inclElabs) return;
+  r.hidInclElabs=inclElabs;
+  save();
+  const hasElabs=(r.elabs||[]).length>0&&(totalElabFlour>0||deductW>0);
+  const flourBase=inclElabs&&hasElabs?flourG:Math.max(0.01,flourG-totalElabFlour);
+  const waterBaseForHyd=inclElabs&&hasElabs?(finalWater+deductW):finalWater;
+  const finalHyd=flourBase>0?waterBaseForHyd/flourBase*100:0;
+  const slMin=inclElabs&&hasElabs?Math.max(5,deductW/flourBase*100):Math.max(5,finalHyd*0.4);
+  const sl=document.getElementById('hid_sl');
+  if(!sl) return;
+  sl.min=slMin.toFixed(1);
+  sl.max=finalHyd.toFixed(1);
+  let cur=parseFloat(sl.value);
+  cur=Math.min(finalHyd,Math.max(slMin,cur));
+  sl.value=cur.toFixed(1);
+  r.hidPct=cur; save();
+  const rr=document.querySelector('.range-row');
+  if(rr&&rr.children.length>=2){
+    rr.children[0].textContent=slMin.toFixed(0)+'%';
+    rr.children[1].textContent=finalHyd.toFixed(1)+'%';
+  }
+  document.querySelectorAll('.hid-mode-btn').forEach((btn,idx)=>{
+    btn.classList.toggle('hid-mode-active',idx===(inclElabs?1:0));
+  });
+  hidUpdate();
+}
+
 function hidGoAmasado(step){
   if(!lastCalc) return;
-  const {flourG,amasadoData}=lastCalc;
+  const {flourG,deductW,totalElabFlour,amasadoData,r}=lastCalc;
   const finalWater=amasadoData.waterMass;
+  const hasElabs=(r.elabs||[]).length>0&&(totalElabFlour>0||deductW>0);
+  const inclElabs=hasElabs&&(r.hidInclElabs||false);
+  const flourBase=inclElabs?flourG:Math.max(0.01,flourG-totalElabFlour);
   const pct1=parseFloat(document.getElementById('hid_sl').value);
-  const water1=flourG*pct1/100;
-  const waterRem=Math.max(0,finalWater-water1);
+  let water1,waterRem;
+  if(inclElabs){
+    const water1Total=flourBase*pct1/100;
+    water1=Math.max(0,water1Total-deductW);
+    waterRem=Math.max(0,finalWater-water1);
+  } else {
+    water1=flourBase*pct1/100;
+    waterRem=Math.max(0,finalWater-water1);
+  }
   const water=step===1?water1:waterRem;
   if(water<0.1) return;
-  const pctRem=flourG>0?waterRem/flourG*100:0;
+  const pctRem=flourBase>0?waterRem/flourBase*100:0;
   const label=step===1
     ?'Paso 1 ('+pct1.toFixed(0)+'% hid.)'
-    :'Agua restante (+'+pctRem.toFixed(0)+'% → total '+( pct1+pctRem).toFixed(0)+'%)';
+    :'Agua restante (+'+pctRem.toFixed(0)+'% → total '+(pct1+pctRem).toFixed(0)+'%)';
   const d=amasadoData;
   aIngs=d.ings.map(i=>({id:aIngId++,...i}));
   document.getElementById('a_wm').value=water.toFixed(0);
@@ -684,6 +750,7 @@ function saveRecipe(){
     }
   }
   const recId = editingId || uid();
+  const existing=editingId?recipes.find(x=>x.id===editingId):null;
   const rec={
     id: recId,
     name,
@@ -691,6 +758,10 @@ function saveRecipe(){
     flours:rFlours.map(f=>({...f})),
     ings:rIngs.map(i=>({...i})),
     elabs:rElabs.map(e=>({...e,ings:(e.ings||[]).map(i=>({...i}))})),
+    ...(existing&&existing.weight!=null&&{weight:existing.weight}),
+    ...(existing&&existing.pieces!=null&&{pieces:existing.pieces}),
+    ...(existing&&existing.hidPct!=null&&{hidPct:existing.hidPct}),
+    ...(existing&&existing.hidInclElabs!=null&&{hidInclElabs:existing.hidInclElabs}),
   };
   if(editingId){
     const idx=recipes.findIndex(x=>x.id===editingId);

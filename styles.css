@@ -229,6 +229,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 #r_elab_empty{font-size:.7rem;color:var(--text3);padding:.3rem 0}
 .elab-hint{font-size:.65rem;color:var(--text3);margin-top:.5rem;background:var(--surface2);border-radius:var(--r);padding:.6rem .8rem;line-height:1.65}
 
+/* ── HIDRATACIÓN: SELECTOR DE MODO ── */
+.hid-mode-row{display:flex;background:var(--surface3);border-radius:8px;padding:3px;gap:2px;margin-bottom:.75rem}
+.hid-mode-btn{flex:1;padding:.38rem .5rem;border:none;background:transparent;border-radius:6px;font-family:'Inter',sans-serif;font-size:.7rem;font-weight:500;color:var(--text3);cursor:pointer;transition:all .15s;text-align:center;-webkit-tap-highlight-color:transparent;line-height:1.2}
+.hid-mode-btn.hid-mode-active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
 /* ── HIDRATACIÓN POR PASOS ── */
 .irr-expandable{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
 .irr-expandable:hover{background:var(--surface2);margin:0 -.3rem;padding-left:.3rem;padding-right:.3rem;border-radius:var(--r)}
