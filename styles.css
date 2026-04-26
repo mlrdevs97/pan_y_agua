@@ -117,7 +117,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .total-bar{background:var(--surface2);border-radius:var(--r);padding:.7rem .95rem;display:flex;align-items:center;justify-content:space-between;margin-top:.5rem}
 .total-bar-lbl{font-size:.7rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text3)}
 .total-bar-val{font-family:'Lora',serif;font-size:1.3rem;font-weight:600}
-
 /* result hero */
 .result-hero{text-align:center;padding:1.1rem 0 .6rem}
 .result-hero .rlbl{font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}

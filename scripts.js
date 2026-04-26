@@ -259,6 +259,10 @@ function renderResTab(i){
   if(i===0){
     // Resumen: raw totals, no elaboration deductions, no elaboration blocks
     let html='<div class="card" style="padding:.85rem 1rem">';
+    html+=`<div class="irr">
+      <div class="irr-left"><div class="name">Harina total</div></div>
+      <div class="irr-right"><div class="grams">${flourG.toFixed(1)} g</div></div>
+    </div>`;
     summaryRows.forEach(row=>{
       const tagHtml=row.tag==='flour'?`<span class="tag tag-flour" style="font-size:.58rem">harina</span>`:row.tag==='water'?`<span class="tag tag-water" style="font-size:.58rem">agua</span>`:'';
       html+=`<div class="irr">
